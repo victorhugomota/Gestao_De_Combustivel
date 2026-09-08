@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import Header from './components/Header';
 import RegistrarAbastecimentoModal from './components/RegistrarAbastecimentoModal';
 import HistoricoAbastecimentosModal from './components/HistoricoAbastecimentosModal';
@@ -198,13 +198,15 @@ export default function App() {
       />
 
       {/* Modal do Calendário de Custos */}
-      <CalendarioCustosModal
-        isOpen={calendarioAberto}
-        onClose={() => setCalendarioAberto(false)}
-        circuito={circuito}
-        abastecimentos={abastecimentos}
-        viagens={viagens}
-      />
+      {calendarioAberto && (
+        <CalendarioCustosModal
+          isOpen={calendarioAberto}
+          onClose={() => setCalendarioAberto(false)}
+          circuito={circuito}
+          abastecimentos={abastecimentos}
+          viagens={viagens}
+        />
+      )}
     </>
   );
 }

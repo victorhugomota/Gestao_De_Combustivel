@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Calendar as CalendarIcon, X, ChevronLeft, ChevronRight, Briefcase, Fuel, Plane } from 'lucide-react';
 import { 
   format, 
@@ -25,8 +25,6 @@ export default function CalendarioCustosModal({
 }) {
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  if (!isOpen) return null;
-
   const custoDiarioTrabalho = circuito?.custoTotalDiarioRS || 0;
 
   // Gerar dias do calendário para o mês exibido
@@ -35,21 +33,34 @@ export default function CalendarioCustosModal({
   const startDate = startOfWeek(monthStart, { weekStartsOn: 0 }); // Domingo
   const endDate = endOfWeek(monthEnd, { weekStartsOn: 0 });
 
-  const days = eachDayOfInterval({ start: startDate, end: endDate });
+  const days = useMemo(() => {
+    try {
+      return eachDayOfInterval({ start: startDate, end: endDate });
+    } catch (e) {
+      console.error('Erro ao calcular intervalo de dias:', e);
+      return [];
+    }
+  }, [startDate, endDate]);
 
   // Mapear abastecimentos por data (formato YYYY-MM-DD)
   const abastecimentosPorDia = useMemo(() => {
     const map = new Map();
-    abastecimentos.forEach(abast => {
-      let dataIso = '';
-      if (abast.data?.toDate) {
-        dataIso = format(abast.data.toDate(), 'yyyy-MM-dd');
-      } else if (typeof abast.data === 'string') {
-        dataIso = abast.data.split('T')[0];
-      }
-      if (dataIso) {
-        if (!map.has(dataIso)) map.set(dataIso, []);
-        map.get(dataIso).push(abast);
+    (abastecimentos || []).forEach(abast => {
+      try {
+        let dataIso = '';
+        if (abast.data?.toDate) {
+          dataIso = format(abast.data.toDate(), 'yyyy-MM-dd');
+        } else if (typeof abast.data === 'string') {
+          dataIso = abast.data.split('T')[0];
+        } else if (abast.data instanceof Date && !isNaN(abast.data)) {
+          dataIso = format(abast.data, 'yyyy-MM-dd');
+        }
+        if (dataIso) {
+          if (!map.has(dataIso)) map.set(dataIso, []);
+          map.get(dataIso).push(abast);
+        }
+      } catch (err) {
+        console.warn('Erro ao mapear data do abastecimento:', err);
       }
     });
     return map;
@@ -58,11 +69,20 @@ export default function CalendarioCustosModal({
   // Mapear viagens por data
   const viagensPorDia = useMemo(() => {
     const map = new Map();
-    viagens.forEach(v => {
-      if (v.startDate) {
-        const dStr = v.startDate.split('T')[0];
-        if (!map.has(dStr)) map.set(dStr, []);
-        map.get(dStr).push(v);
+    (viagens || []).forEach(v => {
+      try {
+        let dStr = '';
+        if (typeof v.startDate === 'string') {
+          dStr = v.startDate.split('T')[0];
+        } else if (v.startDate?.toDate) {
+          dStr = format(v.startDate.toDate(), 'yyyy-MM-dd');
+        }
+        if (dStr) {
+          if (!map.has(dStr)) map.set(dStr, []);
+          map.get(dStr).push(v);
+        }
+      } catch (err) {
+        console.warn('Erro ao mapear data da viagem:', err);
       }
     });
     return map;
@@ -70,25 +90,35 @@ export default function CalendarioCustosModal({
 
   // Contabilizar totais do mês corrente
   const diasUteisDoMes = useMemo(() => {
-    const diasMes = eachDayOfInterval({ start: monthStart, end: monthEnd });
-    return diasMes.filter(d => !isWeekend(d)).length;
+    try {
+      const diasMes = eachDayOfInterval({ start: monthStart, end: monthEnd });
+      return diasMes.filter(d => !isWeekend(d)).length;
+    } catch {
+      return 0;
+    }
   }, [monthStart, monthEnd]);
 
   const totalGastoTrabalhoMes = diasUteisDoMes * custoDiarioTrabalho;
 
   const totalAbastecidoMes = useMemo(() => {
-    return abastecimentos.reduce((acc, curr) => {
-      let dataObj;
-      if (curr.data?.toDate) dataObj = curr.data.toDate();
-      else if (typeof curr.data === 'string') dataObj = parseISO(curr.data);
-      else dataObj = new Date(curr.data);
+    return (abastecimentos || []).reduce((acc, curr) => {
+      try {
+        let dataObj;
+        if (curr.data?.toDate) dataObj = curr.data.toDate();
+        else if (typeof curr.data === 'string') dataObj = parseISO(curr.data);
+        else dataObj = new Date(curr.data);
 
-      if (dataObj && isSameMonth(dataObj, currentDate)) {
-        return acc + Number(curr.valorTotal || 0);
+        if (dataObj && !isNaN(dataObj) && isSameMonth(dataObj, currentDate)) {
+          return acc + Number(curr.valorTotal || 0);
+        }
+      } catch {
+        // Ignorar datas inválidas
       }
       return acc;
     }, 0);
   }, [abastecimentos, currentDate]);
+
+  if (!isOpen) return null;
 
   const nomeMesAno = format(currentDate, "MMMM 'de' yyyy", { locale: ptBR });
   const nomeMesAnoCapitalized = nomeMesAno.charAt(0).toUpperCase() + nomeMesAno.slice(1);
