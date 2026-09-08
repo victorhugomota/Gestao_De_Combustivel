@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import Header from './components/Header';
 import RegistrarAbastecimentoModal from './components/RegistrarAbastecimentoModal';
+import HistoricoAbastecimentosModal from './components/HistoricoAbastecimentosModal';
 import RotasTrabalho from './components/RotasTrabalho';
 import MapaRota from './components/MapaRota';
 import AnalisePrecos from './components/AnalisePrecos';
@@ -18,17 +19,51 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Fuel } from 'lucide-react';
 
 export default function App() {
-  const { abastecimentos, loading: loadingAbs, adicionarAbastecimento } = useAbastecimentos();
+  const { 
+    abastecimentos, 
+    loading: loadingAbs, 
+    adicionarAbastecimento, 
+    editarAbastecimento, 
+    excluirAbastecimento 
+  } = useAbastecimentos();
+
   const { rotas, config, loading: loadingRotas, adicionarRota, excluirRota, atualizarConfig } = useRotas();
   const { viagens, loading: loadingViagens } = useViagens();
-  const { mediaKmPorLitro, mediaDiaria, mediaSemanal, mediaMensal, historicoPrecos, ultimaVariacaoGasolina, ultimaVariacaoEtanol, dadosGrafico } = useMetricas(abastecimentos);
+  const { 
+    mediaKmPorLitro, 
+    mediaDiaria, 
+    mediaSemanal, 
+    mediaMensal, 
+    historicoPrecos, 
+    ultimaVariacaoGasolina, 
+    ultimaVariacaoEtanol, 
+    dadosGrafico 
+  } = useMetricas(abastecimentos);
 
   const [modalAberto, setModalAberto] = useState(false);
-  const [rotaSelecionada, setRotaSelecionada] = useState(null);
+  const [historicoAberto, setHistoricoAberto] = useState(false);
+  const [abastecimentoParaEditar, setAbastecimentoParaEditar] = useState(null);
+  const [circuito, setCircuito] = useState(null);
 
-  const handleRegistrar = async (dados) => {
-    await adicionarAbastecimento(dados);
-    setModalAberto(false);
+  const handleRegistrarOuEditar = async (dados, id) => {
+    try {
+      if (id) {
+        await editarAbastecimento(id, dados);
+      } else {
+        await adicionarAbastecimento(dados);
+      }
+      setModalAberto(false);
+      setAbastecimentoParaEditar(null);
+    } catch (error) {
+      console.error('Erro ao salvar abastecimento:', error);
+      alert('Erro ao salvar no banco de dados. Verifique a conexão.');
+    }
+  };
+
+  const handleAbrirEditar = (item) => {
+    setAbastecimentoParaEditar(item);
+    setHistoricoAberto(false);
+    setModalAberto(true);
   };
 
   const handleFotoChange = async (file) => {
@@ -38,7 +73,7 @@ export default function App() {
       const url = await getDownloadURL(fotoRef);
       await atualizarConfig({ fotoPerfilUrl: url });
     } catch (error) {
-      console.error("Erro ao fazer upload da foto:", error);
+      console.error('Erro ao fazer upload da foto:', error);
     }
   };
 
@@ -52,7 +87,7 @@ export default function App() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
         <Fuel className="w-12 h-12 text-emerald-500 animate-spin mb-4" />
-        <h2 className="text-xl font-semibold text-gray-700">Carregando...</h2>
+        <h2 className="text-xl font-semibold text-gray-700">Carregando dados...</h2>
       </div>
     );
   }
@@ -61,30 +96,35 @@ export default function App() {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50/70 antialiased selection:bg-emerald-500 selection:text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
           
           {/* TOP ROW - Z Points 1 & 2 */}
           <Header 
             config={config} 
-            onRegistrarClick={() => setModalAberto(true)} 
+            onRegistrarClick={() => {
+              setAbastecimentoParaEditar(null);
+              setModalAberto(true);
+            }}
+            onHistoricoClick={() => setHistoricoAberto(true)}
             onFotoChange={handleFotoChange} 
             onNomeVeiculoChange={handleNomeVeiculoChange} 
           />
           
-          {/* DIAGONAL - Routes section with map */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* DIAGONAL - Routes section with multi-stop loop map */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
             <RotasTrabalho 
               rotas={rotas} 
               config={config} 
               adicionarRota={adicionarRota} 
               excluirRota={excluirRota} 
               abastecimentos={abastecimentos} 
-              onRotaSelect={setRotaSelecionada} 
+              mediaKmPorLitro={mediaKmPorLitro}
+              onCircuitoChange={setCircuito} 
             />
             <div className="space-y-6">
               <MapaRota 
-                rotaSelecionada={rotaSelecionada} 
+                circuito={circuito}
                 config={config} 
               />
               <AnalisePrecos 
@@ -97,7 +137,7 @@ export default function App() {
           </div>
           
           {/* BOTTOM ROW - Z Points 3 & 4 */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             <div className="lg:col-span-2 space-y-6">
               <MetricCards 
                 mediaDiaria={mediaDiaria} 
@@ -115,6 +155,8 @@ export default function App() {
               viagens={viagens} 
               loading={loadingViagens} 
               rotas={rotas} 
+              config={config}
+              circuito={circuito}
               mediaKmPorLitro={mediaKmPorLitro} 
               abastecimentos={abastecimentos} 
             />
@@ -123,12 +165,29 @@ export default function App() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal de Registro / Edição */}
       <RegistrarAbastecimentoModal 
         isOpen={modalAberto} 
-        onClose={() => setModalAberto(false)} 
-        onSubmit={handleRegistrar} 
+        onClose={() => {
+          setModalAberto(false);
+          setAbastecimentoParaEditar(null);
+        }} 
+        onSubmit={handleRegistrarOuEditar} 
         ultimoAbastecimento={ultimoAbastecimento} 
+        itemParaEditar={abastecimentoParaEditar}
+      />
+
+      {/* Modal de Histórico de Abastecimentos */}
+      <HistoricoAbastecimentosModal
+        isOpen={historicoAberto}
+        onClose={() => setHistoricoAberto(false)}
+        abastecimentos={abastecimentos}
+        onEditar={handleAbrirEditar}
+        onExcluir={excluirAbastecimento}
+        onNovo={() => {
+          setAbastecimentoParaEditar(null);
+          setModalAberto(true);
+        }}
       />
     </>
   );

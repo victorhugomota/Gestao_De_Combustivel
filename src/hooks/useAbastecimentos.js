@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, addDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
 export function useAbastecimentos() {
@@ -38,6 +38,20 @@ export function useAbastecimentos() {
     }
   };
 
+  const editarAbastecimento = async (id, dados) => {
+    try {
+      const valorLitro = dados.valorTotal / dados.totalLitros;
+      await updateDoc(doc(db, 'abastecimentos', id), {
+        ...dados,
+        valorLitro,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar abastecimento:", error);
+      throw error;
+    }
+  };
+
   const excluirAbastecimento = async (id) => {
     try {
       await deleteDoc(doc(db, 'abastecimentos', id));
@@ -51,6 +65,7 @@ export function useAbastecimentos() {
     abastecimentos,
     loading,
     adicionarAbastecimento,
+    editarAbastecimento,
     excluirAbastecimento
   };
 }

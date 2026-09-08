@@ -1,12 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Fuel, X, ArrowUp, ArrowDown } from 'lucide-react';
 
-export default function RegistrarAbastecimentoModal({ isOpen, onClose, onSubmit, ultimoAbastecimento }) {
+export default function RegistrarAbastecimentoModal({ isOpen, onClose, onSubmit, ultimoAbastecimento, itemParaEditar }) {
   const [data, setData] = useState(new Date().toISOString().split('T')[0]);
   const [odometroKm, setOdometroKm] = useState('');
   const [valorTotal, setValorTotal] = useState('');
   const [tipoCombustivel, setTipoCombustivel] = useState('Gasolina');
   const [totalLitros, setTotalLitros] = useState('');
+
+  useEffect(() => {
+    if (itemParaEditar) {
+      let dataFormatada = new Date().toISOString().split('T')[0];
+      if (itemParaEditar.data) {
+        if (itemParaEditar.data.toDate) {
+          dataFormatada = itemParaEditar.data.toDate().toISOString().split('T')[0];
+        } else if (typeof itemParaEditar.data === 'string') {
+          dataFormatada = itemParaEditar.data.split('T')[0];
+        }
+      }
+      setData(dataFormatada);
+      setOdometroKm(itemParaEditar.odometroKm != null ? String(itemParaEditar.odometroKm) : '');
+      setValorTotal(itemParaEditar.valorTotal != null ? String(itemParaEditar.valorTotal) : '');
+      setTipoCombustivel(itemParaEditar.tipoCombustivel || 'Gasolina');
+      setTotalLitros(itemParaEditar.totalLitros != null ? String(itemParaEditar.totalLitros) : '');
+    } else {
+      setData(new Date().toISOString().split('T')[0]);
+      setOdometroKm('');
+      setValorTotal('');
+      setTipoCombustivel('Gasolina');
+      setTotalLitros('');
+    }
+  }, [itemParaEditar, isOpen]);
   
   if (!isOpen) return null;
 
@@ -24,13 +48,9 @@ export default function RegistrarAbastecimentoModal({ isOpen, onClose, onSubmit,
         tipoCombustivel,
         totalLitros: tLitrosNum,
         valorLitro
-      });
-      // Reset form
-      setData(new Date().toISOString().split('T')[0]);
-      setOdometroKm('');
-      setValorTotal('');
-      setTipoCombustivel('Gasolina');
-      setTotalLitros('');
+      }, itemParaEditar?.id);
+      
+      onClose();
     }
   };
 
@@ -65,7 +85,9 @@ export default function RegistrarAbastecimentoModal({ isOpen, onClose, onSubmit,
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-2">
             <Fuel className="w-6 h-6 text-emerald-500" />
-            <h2 className="text-xl font-bold text-gray-800">Novo Abastecimento</h2>
+            <h2 className="text-xl font-bold text-gray-800">
+              {itemParaEditar ? 'Editar Abastecimento' : 'Novo Abastecimento'}
+            </h2>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-6 h-6" />
@@ -165,9 +187,9 @@ export default function RegistrarAbastecimentoModal({ isOpen, onClose, onSubmit,
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-3 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-colors font-medium"
+              className="flex-1 px-4 py-3 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-colors font-medium shadow-sm"
             >
-              Salvar Abastecimento
+              {itemParaEditar ? 'Salvar Alterações' : 'Salvar Abastecimento'}
             </button>
           </div>
         </form>

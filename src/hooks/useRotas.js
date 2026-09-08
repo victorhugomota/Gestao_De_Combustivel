@@ -3,9 +3,10 @@ import { collection, doc, onSnapshot, addDoc, deleteDoc, setDoc, getDoc, serverT
 import { db } from '../firebase';
 
 const CONFIG_PADRAO = {
-  enderecoCasa: 'Lar Grécia - Rua Alfredo Pucci, 80 - Jardim Emília, Ribeirão Preto - São Paulo',
-  latCasa: -21.1904,
-  lngCasa: -47.7858,
+  nomeCasa: 'Casa - Lar Grécia',
+  enderecoCasa: 'Rua Alfredo Pucci, 80 - Bonfim Paulista, Ribeirão Preto - SP',
+  latCasa: -21.2687653,
+  lngCasa: -47.8197413,
   nomeVeiculo: 'Nissan Kicks de Victor e Maria',
   fotoPerfilUrl: ''
 };
@@ -26,6 +27,23 @@ export function useRotas() {
         
         if (!configSnap.exists()) {
           await setDoc(configRef, CONFIG_PADRAO);
+        } else {
+          // Auto-migrate if has old coordinates or old address
+          const currentData = configSnap.data();
+          if (
+            currentData.latCasa === -21.1904 ||
+            !currentData.nomeCasa ||
+            currentData.nomeCasa !== 'Casa - Lar Grécia' ||
+            currentData.enderecoCasa?.includes('Jardim Emília')
+          ) {
+            await setDoc(configRef, {
+              ...currentData,
+              nomeCasa: 'Casa - Lar Grécia',
+              enderecoCasa: 'Rua Alfredo Pucci, 80 - Bonfim Paulista, Ribeirão Preto - SP',
+              latCasa: -21.2687653,
+              lngCasa: -47.8197413,
+            }, { merge: true });
+          }
         }
 
         unsubscribeConfig = onSnapshot(configRef, (docSnap) => {
