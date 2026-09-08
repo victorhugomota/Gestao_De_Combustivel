@@ -39,6 +39,8 @@ export default function ViagensPreagendadas({
     window.open('https://victorhugomota.github.io/SiteDeViagens/', '_blank');
   };
 
+  const temTrechos = circuito && ((circuito.trechosIda && circuito.trechosIda.length > 0) || (circuito.trechosVolta && circuito.trechosVolta.length > 0));
+
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 sm:p-6 flex flex-col h-full overflow-hidden">
       <div className="flex items-center justify-between gap-2 mb-5">
@@ -66,7 +68,7 @@ export default function ViagensPreagendadas({
 
       <div className="overflow-y-auto space-y-4 pr-1 flex-1">
         
-        {/* Card Principal: Ida/Volta Trabalho com Trechos Detalhados (Prints 3 e 4) */}
+        {/* Card Principal: Ida/Volta Trabalho com Trechos Detalhados (Prints 1 e 2) */}
         <div className="bg-gradient-to-br from-blue-50/80 to-indigo-50/50 border border-blue-200/80 rounded-2xl p-4 shadow-sm">
           <div className="flex items-center justify-between gap-2 mb-3">
             <div className="flex items-center gap-2">
@@ -85,42 +87,73 @@ export default function ViagensPreagendadas({
             )}
           </div>
           
-          {rotas.length === 0 ? (
+          {!temTrechos ? (
             <p className="text-xs text-blue-700/80 italic py-2">
               Cadastre suas rotas de trabalho para visualizar o circuito e custos diários.
             </p>
           ) : (
-            <div className="space-y-2">
-              {/* Trechos individuais com valores (Print 3) */}
-              <div className="space-y-1.5 bg-white/70 backdrop-blur-sm p-3 rounded-xl border border-blue-100/60 text-xs">
-                {circuito.trechos.map((t, idx) => (
-                  <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-50 last:border-0 min-w-0">
-                    <div className="flex items-center gap-1.5 min-w-0 flex-1 pr-2">
-                      <span className="font-semibold text-blue-900 truncate">{t.origemNome}</span>
-                      <ArrowRight className="w-3 h-3 text-blue-400 flex-shrink-0" />
-                      <span className="font-semibold text-blue-900 truncate">{t.destinoNome}</span>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <span className="font-bold text-blue-700 block">
-                        {t.custoRS.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                      </span>
-                      <span className="text-[10px] text-gray-500">{t.distanciaKm.toFixed(1)} km</span>
-                    </div>
+            <div className="space-y-2.5">
+              {/* Trechos de IDA */}
+              {circuito.trechosIda && circuito.trechosIda.length > 0 && (
+                <div className="bg-white/80 backdrop-blur-sm p-3 rounded-xl border border-blue-100/70 text-xs space-y-1.5">
+                  <div className="text-[11px] font-bold text-emerald-800 flex justify-between pb-1 border-b border-gray-100">
+                    <span>🟢 IDA (Casa ➔ Trabalho)</span>
+                    <span>{circuito.distanciaIdaKm.toFixed(1)} km • {circuito.custoIdaRS.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                   </div>
-                ))}
-              </div>
+                  {circuito.trechosIda.map((t, idx) => (
+                    <div key={idx} className="flex justify-between items-center py-0.5 min-w-0">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1 pr-2">
+                        <span className="font-semibold text-gray-800 truncate">{t.origemNome}</span>
+                        <ArrowRight className="w-3 h-3 text-emerald-500 flex-shrink-0" />
+                        <span className="font-semibold text-gray-800 truncate">{t.destinoNome}</span>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="font-bold text-emerald-700 block">
+                          {t.custoRS.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </span>
+                        <span className="text-[10px] text-gray-500">{t.distanciaKm.toFixed(1)} km</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-              {/* Totais consolidado Diário e Mensal (Print 4) */}
-              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border-t border-blue-100">
-                <div className="bg-white/80 p-2.5 rounded-xl border border-blue-100/50 flex-1">
-                  <span className="text-[10px] font-bold text-blue-800 uppercase block">Custo Total por Dia</span>
-                  <span className="text-sm font-black text-blue-900">
+              {/* Trechos de VOLTA */}
+              {circuito.trechosVolta && circuito.trechosVolta.length > 0 && (
+                <div className="bg-white/80 backdrop-blur-sm p-3 rounded-xl border border-blue-100/70 text-xs space-y-1.5">
+                  <div className="text-[11px] font-bold text-blue-800 flex justify-between pb-1 border-b border-gray-100">
+                    <span>🔵 VOLTA (Trabalho ➔ Casa)</span>
+                    <span>{circuito.distanciaVoltaKm.toFixed(1)} km • {circuito.custoVoltaRS.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                  </div>
+                  {circuito.trechosVolta.map((t, idx) => (
+                    <div key={idx} className="flex justify-between items-center py-0.5 min-w-0">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1 pr-2">
+                        <span className="font-semibold text-gray-800 truncate">{t.origemNome}</span>
+                        <ArrowRight className="w-3 h-3 text-blue-400 flex-shrink-0" />
+                        <span className="font-semibold text-gray-800 truncate">{t.destinoNome}</span>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="font-bold text-blue-700 block">
+                          {t.custoRS.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </span>
+                        <span className="text-[10px] text-gray-500">{t.distanciaKm.toFixed(1)} km</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Totais consolidado Diário e Mensal */}
+              <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border-t border-blue-100">
+                <div className="bg-white/90 p-2.5 rounded-xl border border-blue-100/50 flex-1">
+                  <span className="text-[10px] font-bold text-emerald-800 uppercase block">Total Diário (Ida + Volta)</span>
+                  <span className="text-sm font-black text-emerald-900">
                     {circuito.custoTotalDiarioRS.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </span>
                 </div>
-                <div className="bg-white/80 p-2.5 rounded-xl border border-blue-100/50 flex-1">
-                  <span className="text-[10px] font-bold text-indigo-800 uppercase block">Previsão Mensal (22 dias)</span>
-                  <span className="text-sm font-black text-indigo-900">
+                <div className="bg-white/90 p-2.5 rounded-xl border border-blue-100/50 flex-1">
+                  <span className="text-[10px] font-bold text-blue-800 uppercase block">Previsão Mensal (22 dias)</span>
+                  <span className="text-sm font-black text-blue-900">
                     {circuito.custoTotalMensalRS.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </span>
                 </div>
@@ -170,7 +203,6 @@ export default function ViagensPreagendadas({
                 const distanciaKm = viagem.transport?.distanceKm || viagem.distancia;
                 const combustivelEstimado = viagem.transport?.calculatedFuelCost;
                 
-                // Formatação das datas
                 let periodoTexto = '';
                 if (viagem.startDate) {
                   const sParts = viagem.startDate.split('T')[0].split('-');
@@ -222,7 +254,6 @@ export default function ViagensPreagendadas({
                       </p>
                     )}
 
-                    {/* Resumo de Custos da Viagem */}
                     <div className="pt-2 border-t border-emerald-100/70 flex items-center justify-between text-xs">
                       {distanciaKm ? (
                         <span className="text-gray-500 font-medium">
