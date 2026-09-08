@@ -2,6 +2,7 @@
 import Header from './components/Header';
 import RegistrarAbastecimentoModal from './components/RegistrarAbastecimentoModal';
 import HistoricoAbastecimentosModal from './components/HistoricoAbastecimentosModal';
+import CalendarioCustosModal from './components/CalendarioCustosModal';
 import RotasTrabalho from './components/RotasTrabalho';
 import MapaRota from './components/MapaRota';
 import AnalisePrecos from './components/AnalisePrecos';
@@ -31,9 +32,10 @@ export default function App() {
   const { viagens, loading: loadingViagens } = useViagens();
   const { 
     mediaKmPorLitro, 
-    mediaDiaria, 
-    mediaSemanal, 
-    mediaMensal, 
+    custoPorKm,
+    precoMedioLitro,
+    totalGastoRS,
+    totalLitrosAbastecidos,
     historicoPrecos, 
     ultimaVariacaoGasolina, 
     ultimaVariacaoEtanol, 
@@ -42,6 +44,7 @@ export default function App() {
 
   const [modalAberto, setModalAberto] = useState(false);
   const [historicoAberto, setHistoricoAberto] = useState(false);
+  const [calendarioAberto, setCalendarioAberto] = useState(false);
   const [abastecimentoParaEditar, setAbastecimentoParaEditar] = useState(null);
   const [circuito, setCircuito] = useState(null);
 
@@ -107,6 +110,7 @@ export default function App() {
               setModalAberto(true);
             }}
             onHistoricoClick={() => setHistoricoAberto(true)}
+            onCalendarioClick={() => setCalendarioAberto(true)}
             onFotoChange={handleFotoChange} 
             onNomeVeiculoChange={handleNomeVeiculoChange} 
           />
@@ -139,11 +143,13 @@ export default function App() {
           {/* BOTTOM ROW - Z Points 3 & 4 */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             <div className="lg:col-span-2 space-y-6">
+              {/* Card de 3 divisões: Média de consumo, Custo/km e Preço médio (sem semanal e mensal) */}
               <MetricCards 
-                mediaDiaria={mediaDiaria} 
-                mediaSemanal={mediaSemanal} 
-                mediaMensal={mediaMensal} 
                 mediaKmPorLitro={mediaKmPorLitro} 
+                custoPorKm={custoPorKm}
+                precoMedioLitro={precoMedioLitro}
+                totalGastoRS={totalGastoRS}
+                totalLitrosAbastecidos={totalLitrosAbastecidos}
                 dadosGrafico={dadosGrafico} 
               />
               <GraficoConsumo 
@@ -159,6 +165,7 @@ export default function App() {
               circuito={circuito}
               mediaKmPorLitro={mediaKmPorLitro} 
               abastecimentos={abastecimentos} 
+              onCalendarioClick={() => setCalendarioAberto(true)}
             />
           </div>
           
@@ -188,6 +195,15 @@ export default function App() {
           setAbastecimentoParaEditar(null);
           setModalAberto(true);
         }}
+      />
+
+      {/* Modal do Calendário de Custos */}
+      <CalendarioCustosModal
+        isOpen={calendarioAberto}
+        onClose={() => setCalendarioAberto(false)}
+        circuito={circuito}
+        abastecimentos={abastecimentos}
+        viagens={viagens}
       />
     </>
   );

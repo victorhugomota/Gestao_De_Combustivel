@@ -1,7 +1,14 @@
-import React, { useState, useRef } from 'react';
-import { Fuel, Camera, Plus, Check, Edit2, History } from 'lucide-react';
+﻿import React, { useState, useRef } from 'react';
+import { Fuel, Camera, Plus, Check, Edit2, History, CalendarDays } from 'lucide-react';
 
-export default function Header({ config, onRegistrarClick, onHistoricoClick, onFotoChange, onNomeVeiculoChange }) {
+export default function Header({ 
+  config, 
+  onRegistrarClick, 
+  onHistoricoClick, 
+  onCalendarioClick, 
+  onFotoChange, 
+  onNomeVeiculoChange 
+}) {
   const [isEditing, setIsEditing] = useState(false);
   const [nome, setNome] = useState(config?.nomeVeiculo || 'Nissan Kicks de Victor e Maria');
   const fileInputRef = useRef(null);
@@ -90,10 +97,20 @@ export default function Header({ config, onRegistrarClick, onHistoricoClick, onF
         </div>
       </div>
 
-      <div className="flex items-center gap-3 w-full md:w-auto">
+      {/* Ações / Botões */}
+      <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+        <button
+          onClick={onCalendarioClick}
+          className="flex-1 sm:flex-none bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-3 rounded-2xl transition-all flex items-center justify-center gap-2 font-semibold text-sm border border-blue-200/60 shadow-xs"
+          title="Ver calendário de custos diários e mensais"
+        >
+          <CalendarDays className="w-4 h-4 text-blue-600" />
+          <span>Calendário de Custos</span>
+        </button>
+
         <button
           onClick={onHistoricoClick}
-          className="flex-1 md:flex-none bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 sm:px-5 py-3 rounded-2xl transition-all flex items-center justify-center gap-2 font-semibold text-sm border border-gray-200/60 shadow-sm"
+          className="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-2xl transition-all flex items-center justify-center gap-2 font-semibold text-sm border border-gray-200/60 shadow-xs"
           title="Ver histórico de abastecimentos"
         >
           <History className="w-4 h-4 text-gray-600" />
@@ -102,7 +119,7 @@ export default function Header({ config, onRegistrarClick, onHistoricoClick, onF
 
         <button
           onClick={onRegistrarClick}
-          className="flex-1 md:flex-none bg-emerald-500 hover:bg-emerald-600 text-white px-5 sm:px-6 py-3 rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 font-semibold text-sm animate-pulse hover:animate-none"
+          className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 font-semibold text-sm animate-pulse hover:animate-none"
         >
           <Plus className="w-4 h-4" />
           <span>Registrar Abastecimento</span>

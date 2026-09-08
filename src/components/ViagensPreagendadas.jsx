@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { Plane, Briefcase, Link as LinkIcon, ArrowRight, Calendar, DollarSign } from 'lucide-react';
+﻿import React, { useMemo } from 'react';
+import { Plane, Briefcase, ExternalLink, ArrowRight, Calendar, CalendarDays, Fuel, MapPin } from 'lucide-react';
 import { calcularCircuito } from '../utils/rotasUtils';
 
 export default function ViagensPreagendadas({ 
@@ -9,7 +9,8 @@ export default function ViagensPreagendadas({
   config,
   circuito: circuitoProp,
   mediaKmPorLitro = 10, 
-  abastecimentos = [] 
+  abastecimentos = [],
+  onCalendarioClick
 }) {
   const avgPricePerLiter = useMemo(() => {
     if (!abastecimentos || abastecimentos.length === 0) return 5.50;
@@ -34,6 +35,10 @@ export default function ViagensPreagendadas({
     );
   }, [circuitoProp, config, rotas, avgKmL, avgPricePerLiter]);
 
+  const handleAbrirSiteViagens = () => {
+    window.open('https://victorhugomota.github.io/SiteDeViagens/', '_blank');
+  };
+
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 sm:p-6 flex flex-col h-full overflow-hidden">
       <div className="flex items-center justify-between gap-2 mb-5">
@@ -46,6 +51,17 @@ export default function ViagensPreagendadas({
             <p className="text-xs text-gray-500">Estimativas de deslocamento e viagens</p>
           </div>
         </div>
+
+        {onCalendarioClick && (
+          <button
+            onClick={onCalendarioClick}
+            className="px-2.5 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors flex items-center gap-1.5"
+            title="Abrir calendário mensal de custos"
+          >
+            <CalendarDays className="w-3.5 h-3.5" />
+            <span>Calendário</span>
+          </button>
+        )}
       </div>
 
       <div className="overflow-y-auto space-y-4 pr-1 flex-1">
@@ -115,54 +131,118 @@ export default function ViagensPreagendadas({
 
         {/* Viagens pré-agendadas (SiteDeViagens) */}
         <div className="pt-1">
-          <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2.5">
-            Viagens Integradas
-          </h4>
+          <div className="flex items-center justify-between mb-2.5">
+            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              Próximas Viagens (Site de Viagens)
+            </h4>
+            <button 
+              onClick={handleAbrirSiteViagens}
+              className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-colors"
+              title="Abrir Site de Viagens"
+            >
+              <span>Acessar Site</span>
+              <ExternalLink className="w-3 h-3" />
+            </button>
+          </div>
 
           {loading ? (
-            <div className="text-center py-4 text-xs text-gray-500">Carregando viagens integradas...</div>
+            <div className="text-center py-6 text-xs text-gray-500">
+              <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+              Carregando viagens do Site de Viagens...
+            </div>
           ) : viagens.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-6 text-center text-gray-400 bg-gray-50/70 rounded-2xl border border-dashed border-gray-200 p-4">
-              <LinkIcon className="w-7 h-7 mb-2 opacity-40 text-gray-400" />
-              <p className="text-xs font-medium text-gray-600">Site de Viagens conectado</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">Nenhuma viagem com data futura no momento.</p>
+            <div 
+              onClick={handleAbrirSiteViagens}
+              className="flex flex-col items-center justify-center py-6 text-center text-gray-500 bg-gray-50/70 hover:bg-emerald-50/50 cursor-pointer rounded-2xl border border-dashed border-gray-200 p-4 transition-colors group"
+            >
+              <Plane className="w-7 h-7 mb-2 opacity-40 text-emerald-600 group-hover:scale-110 transition-transform" />
+              <p className="text-xs font-bold text-gray-700">Nenhuma viagem agendada no momento</p>
+              <p className="text-[11px] text-gray-400 mt-0.5 flex items-center gap-1">
+                <span>Clique para planejar uma viagem no Site de Viagens</span>
+                <ExternalLink className="w-3 h-3" />
+              </p>
             </div>
           ) : (
-            viagens.map((viagem, i) => {
-              let costText = '';
-              if (viagem.distancia) {
-                const tripCost = ((viagem.distancia * 2) / avgKmL) * avgPricePerLiter;
-                costText = tripCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-              }
-              
-              const isUpcoming = !viagem.status || viagem.status !== 'concluida';
+            <div className="space-y-3">
+              {viagens.map((viagem, i) => {
+                const titulo = viagem.title || viagem.destino || viagem.titulo || 'Viagem Planejada';
+                const destino = viagem.destinationAddress || viagem.destino || '';
+                const distanciaKm = viagem.transport?.distanceKm || viagem.distancia;
+                const combustivelEstimado = viagem.transport?.calculatedFuelCost;
+                
+                // Formatação das datas
+                let periodoTexto = '';
+                if (viagem.startDate) {
+                  const sParts = viagem.startDate.split('T')[0].split('-');
+                  const sData = sParts.length === 3 ? `${sParts[2]}/${sParts[1]}/${sParts[0]}` : viagem.startDate;
+                  if (viagem.endDate) {
+                    const eParts = viagem.endDate.split('T')[0].split('-');
+                    const eData = eParts.length === 3 ? `${eParts[2]}/${eParts[1]}/${eParts[0]}` : viagem.endDate;
+                    periodoTexto = `${sData} a ${eData}`;
+                  } else {
+                    periodoTexto = `A partir de ${sData}`;
+                  }
+                }
 
-              return (
-                <div key={i} className={`p-3.5 rounded-2xl border ${isUpcoming ? 'bg-emerald-50/70 border-emerald-100' : 'bg-gray-50 border-gray-100'}`}>
-                  <div className="flex justify-between items-start mb-1.5">
-                    <h5 className="font-bold text-gray-900 text-sm">{viagem.destino || viagem.titulo || viagem.nome || 'Viagem'}</h5>
-                    {viagem.status && (
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isUpcoming ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-200 text-gray-700'}`}>
-                        {viagem.status}
+                return (
+                  <div 
+                    key={viagem.id || i}
+                    onClick={handleAbrirSiteViagens}
+                    className="p-4 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50/50 to-white hover:border-emerald-300 hover:shadow-md cursor-pointer transition-all group"
+                  >
+                    <div className="flex justify-between items-start gap-2 mb-1.5">
+                      <div className="min-w-0 flex-1">
+                        <h5 className="font-bold text-gray-900 text-sm group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
+                          <span>{titulo}</span>
+                          <ExternalLink className="w-3 h-3 text-gray-400 group-hover:text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </h5>
+                        {destino && (
+                          <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5 truncate">
+                            <MapPin className="w-3 h-3 text-emerald-500 flex-shrink-0" />
+                            <span>{destino}</span>
+                          </p>
+                        )}
+                      </div>
+
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 flex-shrink-0">
+                        {viagem.status || 'Agendada'}
                       </span>
+                    </div>
+
+                    {periodoTexto && (
+                      <div className="text-[11px] text-gray-500 flex items-center gap-1.5 mb-2">
+                        <Calendar className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                        <span>{periodoTexto}</span>
+                      </div>
                     )}
+
+                    {viagem.notes && (
+                      <p className="text-xs text-gray-600 line-clamp-2 mb-2 italic">
+                        "{viagem.notes}"
+                      </p>
+                    )}
+
+                    {/* Resumo de Custos da Viagem */}
+                    <div className="pt-2 border-t border-emerald-100/70 flex items-center justify-between text-xs">
+                      {distanciaKm ? (
+                        <span className="text-gray-500 font-medium">
+                          {Number(distanciaKm).toFixed(0)} km (ida)
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">Ver no site</span>
+                      )}
+
+                      {combustivelEstimado != null && (
+                        <div className="flex items-center gap-1 text-emerald-800 font-bold">
+                          <Fuel className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Combustível: {Number(combustivelEstimado).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  {(viagem.dataIda || viagem.dataVolta) && (
-                    <div className="text-[11px] text-gray-500 flex items-center gap-1.5 mb-1.5">
-                      <Calendar className="w-3 h-3 text-gray-400" />
-                      <span>{viagem.dataIda || ''} {viagem.dataVolta ? 'a ' + viagem.dataVolta : ''}</span>
-                    </div>
-                  )}
-                  {viagem.descricao && <p className="text-xs text-gray-600 mb-2">{viagem.descricao}</p>}
-                  {costText && (
-                    <div className="text-xs font-bold text-emerald-800 pt-1.5 border-t border-emerald-100 mt-1 flex items-center justify-between">
-                      <span className="text-gray-500 font-normal">Custo est. combustível:</span>
-                      <span>{costText}</span>
-                    </div>
-                  )}
-                </div>
-              );
-            })
+                );
+              })}
+            </div>
           )}
         </div>
 

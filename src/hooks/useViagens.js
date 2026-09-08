@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { viagensDb } from '../firebase';
 
@@ -11,16 +11,21 @@ export function useViagens() {
 
     try {
       if (viagensDb) {
-        const viagensRef = collection(viagensDb, 'viagens');
-        unsubscribe = onSnapshot(viagensRef, (snapshot) => {
+        const tripsRef = collection(viagensDb, 'trips');
+        unsubscribe = onSnapshot(tripsRef, (snapshot) => {
           const docs = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
           }));
+          docs.sort((a, b) => {
+            const da = a.startDate ? new Date(a.startDate).getTime() : 0;
+            const db = b.startDate ? new Date(b.startDate).getTime() : 0;
+            return da - db;
+          });
           setViagens(docs);
           setLoading(false);
         }, (error) => {
-          console.error("Erro ao ler viagensDb:", error);
+          console.error("Erro ao ler trips no viagensDb:", error);
           setViagens([]);
           setLoading(false);
         });
