@@ -15,6 +15,8 @@ import {
   parseISO
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { preverMes } from '../utils/previsao';
+import { ehDiaUtil } from '../utils/feriados';
 
 export default function CalendarioCustosModal({
   isOpen,
@@ -88,17 +90,21 @@ export default function CalendarioCustosModal({
     return map;
   }, [viagens]);
 
-  // Contabilizar totais do mês corrente
-  const diasUteisDoMes = useMemo(() => {
-    try {
-      const diasMes = eachDayOfInterval({ start: monthStart, end: monthEnd });
-      return diasMes.filter(d => !isWeekend(d)).length;
-    } catch {
-      return 0;
-    }
-  }, [monthStart, monthEnd]);
+  // Previsão unificada do mês exibido (mesma lógica das outras telas)
+  const previsao = useMemo(
+    () =>
+      preverMes({
+        mesReferencia: currentDate,
+        custoDiarioTrabalho,
+        viagens,
+        abastecimentos,
+        custoEhEstimativa: circuito?.isConsumoEstimado || circuito?.isPrecoEstimado || !circuito?.isDistanciaReal,
+      }),
+    [currentDate, custoDiarioTrabalho, viagens, abastecimentos, circuito]
+  );
 
-  const totalGastoTrabalhoMes = diasUteisDoMes * custoDiarioTrabalho;
+  const diasUteisDoMes = previsao.diasUteisMes;
+  const totalGastoTrabalhoMes = previsao.custoTrabalhoMes;
 
   const totalAbastecidoMes = useMemo(() => {
     return (abastecimentos || []).reduce((acc, curr) => {
@@ -205,10 +211,13 @@ export default function CalendarioCustosModal({
               <CalendarIcon className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-[11px] font-bold text-gray-400 block uppercase">Custo Diário Estimado</span>
+              <span className="text-[11px] font-bold text-gray-400 block uppercase">Previsão Total do Mês</span>
               <span className="text-sm font-extrabold text-blue-600">
-                {custoDiarioTrabalho.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                <span className="text-[11px] font-normal text-gray-500"> / dia útil</span>
+                {previsao.custoTotalPrevisto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              </span>
+              <span className="text-[10px] text-gray-500 block">
+                trabalho + {previsao.custoViagensMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} em viagens
+                {previsao.isEstimativa ? ' • estimativa' : ''}
               </span>
             </div>
           </div>
@@ -233,6 +242,7 @@ export default function CalendarioCustosModal({
               const dayStr = format(day, 'yyyy-MM-dd');
               const inCurrentMonth = isSameMonth(day, currentDate);
               const isFimDeSemana = isWeekend(day);
+              const isDiaUtil = ehDiaUtil(day);
               const isToday = isSameDay(day, new Date());
 
               const abastecimentosDoDia = abastecimentosPorDia.get(dayStr) || [];
@@ -263,8 +273,8 @@ export default function CalendarioCustosModal({
                   </div>
 
                   <div className="space-y-1 mt-1">
-                    {/* Custo estimado da rota em dias úteis */}
-                    {inCurrentMonth && !isFimDeSemana && custoDiarioTrabalho > 0 && (
+                    {/* Custo estimado da rota em dias úteis (exclui feriados) */}
+                    {inCurrentMonth && isDiaUtil && custoDiarioTrabalho > 0 && (
                       <div className="bg-emerald-50 text-emerald-700 font-bold text-[10px] sm:text-[11px] px-1.5 py-0.5 rounded-md flex items-center justify-between">
                         <span className="truncate">Rota:</span>
                         <span>{custoDiarioTrabalho.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>

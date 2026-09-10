@@ -1,15 +1,30 @@
 import { useState, useEffect } from 'react';
-import { collection, doc, onSnapshot, addDoc, deleteDoc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  onSnapshot,
+  addDoc,
+  deleteDoc,
+  updateDoc,
+  setDoc,
+  getDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
 import { db } from '../firebase';
 
+// Config inicial usada APENAS na primeira execução (documento inexistente).
+// Depois disso o usuário manda — nada aqui sobrescreve o que ele editou.
 const CONFIG_PADRAO = {
-  nomeCasa: 'Casa - Lar Grécia',
+  nomeCasa: 'Casa',
   enderecoCasa: 'Rua Alfredo Pucci, 80 - Bonfim Paulista, Ribeirão Preto - SP',
   latCasa: -21.2687653,
   lngCasa: -47.8197413,
-  nomeVeiculo: 'Nissan Kicks de Victor e Maria',
-  fotoPerfilUrl: ''
+  nomeVeiculo: 'Nissan Kicks',
+  fotoPerfilUrl: '',
 };
+
+// Coordenada antiga comprovadamente errada — corrigida uma única vez.
+const COORD_ANTIGA_ERRADA = -21.1904;
 
 export function useRotas() {
   const [rotas, setRotas] = useState([]);
@@ -20,99 +35,62 @@ export function useRotas() {
     let unsubscribeRotas;
     let unsubscribeConfig;
 
-    const carregarDados = async () => {
+    const carregar = async () => {
       try {
         const configRef = doc(db, 'configuracoes', 'geral');
-        const configSnap = await getDoc(configRef);
-        
-        if (!configSnap.exists()) {
+        const snap = await getDoc(configRef);
+
+        if (!snap.exists()) {
           await setDoc(configRef, CONFIG_PADRAO);
         } else {
-          // Auto-migrate if has old coordinates or old address
-          const currentData = configSnap.data();
-          if (
-            currentData.latCasa === -21.1904 ||
-            !currentData.nomeCasa ||
-            currentData.nomeCasa !== 'Casa - Lar Grécia' ||
-            currentData.enderecoCasa?.includes('Jardim Emília')
-          ) {
-            await setDoc(configRef, {
-              ...currentData,
-              nomeCasa: 'Casa - Lar Grécia',
-              enderecoCasa: 'Rua Alfredo Pucci, 80 - Bonfim Paulista, Ribeirão Preto - SP',
-              latCasa: -21.2687653,
-              lngCasa: -47.8197413,
-            }, { merge: true });
+          const atual = snap.data();
+          // Migração pontual e conservadora: só conserta a coordenada errada,
+          // sem tocar em nome/endereço definidos pelo usuário.
+          if (Math.abs(Number(atual.latCasa) - COORD_ANTIGA_ERRADA) < 0.0001) {
+            await setDoc(
+              configRef,
+              { latCasa: CONFIG_PADRAO.latCasa, lngCasa: CONFIG_PADRAO.lngCasa },
+              { merge: true }
+            );
           }
         }
 
-        unsubscribeConfig = onSnapshot(configRef, (docSnap) => {
-          if (docSnap.exists()) {
-            setConfig(docSnap.data());
-          }
+        unsubscribeConfig = onSnapshot(configRef, (d) => {
+          if (d.exists()) setConfig({ ...CONFIG_PADRAO, ...d.data() });
         });
 
-        const rotasRef = collection(db, 'rotas');
-        unsubscribeRotas = onSnapshot(rotasRef, (snapshot) => {
-          const docs = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
-          setRotas(docs);
+        unsubscribeRotas = onSnapshot(collection(db, 'rotas'), (s) => {
+          setRotas(s.docs.map((d) => ({ id: d.id, ...d.data() })));
           setLoading(false);
         });
-
       } catch (error) {
-        console.error("Erro ao carregar dados de rotas:", error);
+        console.error('Erro ao carregar dados de rotas:', error);
         setLoading(false);
       }
     };
 
-    carregarDados();
-
+    carregar();
     return () => {
-      if (unsubscribeRotas) unsubscribeRotas();
-      if (unsubscribeConfig) unsubscribeConfig();
+      unsubscribeRotas?.();
+      unsubscribeConfig?.();
     };
   }, []);
 
   const adicionarRota = async (dados) => {
-    try {
-      await addDoc(collection(db, 'rotas'), {
-        ...dados,
-        createdAt: serverTimestamp()
-      });
-    } catch (error) {
-      console.error("Erro ao adicionar rota:", error);
-      throw error;
-    }
+    await addDoc(collection(db, 'rotas'), { ...dados, createdAt: serverTimestamp() });
   };
 
   const excluirRota = async (id) => {
-    try {
-      await deleteDoc(doc(db, 'rotas', id));
-    } catch (error) {
-      console.error("Erro ao excluir rota:", error);
-      throw error;
-    }
+    await deleteDoc(doc(db, 'rotas', id));
+  };
+
+  const atualizarRota = async (id, dados) => {
+    await updateDoc(doc(db, 'rotas', id), dados);
   };
 
   const atualizarConfig = async (dados) => {
-    try {
-      const configRef = doc(db, 'configuracoes', 'geral');
-      await setDoc(configRef, dados, { merge: true });
-    } catch (error) {
-      console.error("Erro ao atualizar configurações:", error);
-      throw error;
-    }
+    await setDoc(doc(db, 'configuracoes', 'geral'), dados, { merge: true });
   };
 
-  return {
-    rotas,
-    config,
-    loading,
-    adicionarRota,
-    excluirRota,
-    atualizarConfig
-  };
+  return { rotas, config, loading, adicionarRota, excluirRota, atualizarRota, atualizarConfig };
 }

@@ -12,20 +12,24 @@ import {
   CheckCircle2,
   Sparkles
 } from 'lucide-react';
-import { 
-  montarSequenciaCircuito, 
-  calcularCustosCircuito, 
-  obterDistanciasReaisOSRM 
+import {
+  montarSequenciaCircuito,
+  calcularCustosCircuito,
+  obterDistanciasReaisOSRM
 } from '../utils/rotasUtils';
+import { buscarEnderecos } from '../utils/geocode';
+import EstimativaBadge from './EstimativaBadge';
 
-export default function RotasTrabalho({ 
-  rotas = [], 
-  config, 
-  adicionarRota, 
-  excluirRota, 
-  abastecimentos = [], 
-  mediaKmPorLitro = 10,
-  onCircuitoChange 
+export default function RotasTrabalho({
+  rotas = [],
+  config,
+  adicionarRota,
+  excluirRota,
+  abastecimentos = [],
+  viagens = [],
+  precoMedioLitro = 0,
+  mediaKmPorLitro = 0,
+  onCircuitoChange
 }) {
   const [nome, setNome] = useState('');
   const [endereco, setEndereco] = useState('');
@@ -41,15 +45,14 @@ export default function RotasTrabalho({
   const latCasa = config?.latCasa || -21.2687653;
   const lngCasa = config?.lngCasa || -47.8197413;
 
-  // Preço médio do litro baseado nos últimos abastecimentos
+  // Preço médio real do litro (0 quando ainda não há dados -> vira estimativa sinalizada)
   const avgPricePerLiter = useMemo(() => {
-    if (!abastecimentos || abastecimentos.length === 0) return 5.50;
+    if (precoMedioLitro > 0) return precoMedioLitro;
+    if (!abastecimentos || abastecimentos.length === 0) return 0;
     const ultimos = abastecimentos.slice(0, 5);
     const soma = ultimos.reduce((acc, curr) => acc + Number(curr.valorLitro || 0), 0);
-    return soma > 0 ? soma / ultimos.length : 5.50;
-  }, [abastecimentos]);
-
-  const avgKmL = mediaKmPorLitro > 0 ? mediaKmPorLitro : 10;
+    return soma > 0 ? soma / ultimos.length : 0;
+  }, [abastecimentos, precoMedioLitro]);
 
   // Montar a sequência de pontos ordenada por proximidade
   const sequenciaInfo = useMemo(() => {
@@ -84,13 +87,14 @@ export default function RotasTrabalho({
 
   // Calcular custos considerando as distâncias viárias reais
   const circuito = useMemo(() => {
-    return calcularCustosCircuito(
-      sequenciaInfo,
-      avgKmL,
-      avgPricePerLiter,
-      distanciasOSRM
-    );
-  }, [sequenciaInfo, avgKmL, avgPricePerLiter, distanciasOSRM]);
+    return calcularCustosCircuito(sequenciaInfo, {
+      mediaKmPorLitro,
+      precoLitroMedio: avgPricePerLiter,
+      distanciasOSRM,
+      viagens,
+      abastecimentos
+    });
+  }, [sequenciaInfo, mediaKmPorLitro, avgPricePerLiter, distanciasOSRM, viagens, abastecimentos]);
 
   // Notificar o componente pai sobre a rota/circuito atual para o Mapa
   useEffect(() => {
@@ -99,7 +103,8 @@ export default function RotasTrabalho({
     }
   }, [circuito, onCircuitoChange]);
 
-  // Autocomplete inteligente (Photon + ViaCEP + Nominatim)
+  // Autocomplete de endereço (centralizado em utils/geocode com cache)
+  const [erroBusca, setErroBusca] = useState('');
   useEffect(() => {
     const cleanQuery = endereco.trim();
     if (cleanQuery.length < 3) {
@@ -110,82 +115,12 @@ export default function RotasTrabalho({
 
     const timer = setTimeout(async () => {
       setLoadingSearch(true);
+      setErroBusca('');
       try {
-        // Se for um CEP (ex: 14020-263 ou 14020263)
-        const apenasNumeros = cleanQuery.replace(/\D/g, '');
-        if (apenasNumeros.length === 8) {
-          const cepRes = await fetch(`https://viacep.com.br/ws/${apenasNumeros}/json/`);
-          const cepData = await cepRes.json();
-          if (!cepData.erro) {
-            const enderecoFormatado = `${cepData.logradouro}, ${cepData.bairro} - ${cepData.localidade}, ${cepData.uf}`;
-            const geoRes = await fetch(
-              `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(enderecoFormatado)}&countrycodes=br&limit=3`,
-              { headers: { 'Accept-Language': 'pt-BR' } }
-            );
-            const geoData = await geoRes.json();
-            if (geoData.length > 0) {
-              setSuggestions([{
-                titulo: `${cepData.logradouro}, ${cepData.bairro}`,
-                subtitulo: `${cepData.localidade} - ${cepData.uf} • CEP ${cepData.cep}`,
-                display_name: enderecoFormatado,
-                lat: parseFloat(geoData[0].lat),
-                lon: parseFloat(geoData[0].lon)
-              }]);
-              setLoadingSearch(false);
-              return;
-            }
-          }
-        }
-
-        // Busca no Photon (biasing para Ribeirão Preto / Casa)
-        const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(cleanQuery)}&lat=${latCasa}&lon=${lngCasa}&limit=6&lang=default`;
-        const photonRes = await fetch(photonUrl);
-        const photonData = await photonRes.json();
-
-        if (photonData.features && photonData.features.length > 0) {
-          const formatados = photonData.features.map(f => {
-            const p = f.properties || {};
-            const street = p.street || p.name || cleanQuery;
-            const houseNumber = p.housenumber ? `, ${p.housenumber}` : '';
-            const district = p.district ? ` - ${p.district}` : '';
-            const city = p.city || 'Ribeirão Preto';
-            const state = p.state || 'SP';
-            const postcode = p.postcode ? ` • CEP ${p.postcode}` : '';
-
-            const titulo = `${street}${houseNumber}${district}`;
-            const subtitulo = `${city} - ${state}${postcode}`;
-            const display_name = `${titulo}, ${subtitulo}`.replace(' • ', ', ');
-
-            return {
-              titulo,
-              subtitulo,
-              display_name,
-              lat: f.geometry.coordinates[1],
-              lon: f.geometry.coordinates[0]
-            };
-          });
-
-          setSuggestions(formatados);
-          setLoadingSearch(false);
-          return;
-        }
-
-        // Fallback para Nominatim OpenStreetMap
-        const nomRes = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(cleanQuery)}&countrycodes=br&limit=5&addressdetails=1`,
-          { headers: { 'Accept-Language': 'pt-BR' } }
-        );
-        const nomData = await nomRes.json();
-        const nomFormatados = nomData.map(item => ({
-          titulo: item.name || item.display_name.split(',')[0],
-          subtitulo: item.display_name.split(',').slice(1, 4).join(','),
-          display_name: item.display_name,
-          lat: parseFloat(item.lat),
-          lon: parseFloat(item.lon)
-        }));
-        setSuggestions(nomFormatados);
+        const res = await buscarEnderecos(cleanQuery, { lat: latCasa, lon: lngCasa });
+        setSuggestions(res);
       } catch (err) {
-        console.error('Erro na busca de endereço:', err);
+        setErroBusca(err.message || 'Falha ao buscar endereço.');
       } finally {
         setLoadingSearch(false);
       }
@@ -211,14 +146,13 @@ export default function RotasTrabalho({
     if (!lat || !lon) {
       try {
         setLoadingSearch(true);
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(endereco)}&countrycodes=br&limit=1`);
-        const data = await res.json();
-        if (data.length > 0) {
-          lat = parseFloat(data[0].lat);
-          lon = parseFloat(data[0].lon);
-          enderecoFinal = data[0].display_name;
+        const res = await buscarEnderecos(endereco, { limite: 1 });
+        if (res[0]) {
+          lat = res[0].lat;
+          lon = res[0].lon;
+          enderecoFinal = res[0].display_name;
         } else {
-          alert('Endereço não localizado no mapa. Por favor, selecione uma das sugestões ao digitar.');
+          alert('Endereço não localizado no mapa. Selecione uma das sugestões ao digitar.');
           setLoadingSearch(false);
           return;
         }
@@ -410,10 +344,39 @@ export default function RotasTrabalho({
               )}
             </div>
 
-            <span className="text-[11px] text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full font-bold">
-              {circuito.isDistanciaReal ? '🛣️ Distância Real Rodoviária' : 'Estimativa Viária'}
-            </span>
+            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+              <EstimativaBadge
+                estimado={!circuito.isDistanciaReal}
+                textoReal="🛣️ Distância real"
+                textoEstimado="Distância estimada"
+                motivo={
+                  circuito.isDistanciaReal
+                    ? 'Distâncias viárias obtidas do OSRM'
+                    : 'OSRM indisponível — usando linha reta × 1,38'
+                }
+              />
+              {(circuito.isConsumoEstimado || circuito.isPrecoEstimado) && (
+                <EstimativaBadge
+                  estimado
+                  textoEstimado={
+                    circuito.isConsumoEstimado && circuito.isPrecoEstimado
+                      ? 'Consumo e preço estimados'
+                      : circuito.isConsumoEstimado
+                      ? 'Consumo estimado (10 km/L)'
+                      : 'Preço estimado (R$ 5,50)'
+                  }
+                  motivo="Registre abastecimentos para calcular com seus dados reais"
+                />
+              )}
+            </div>
           </div>
+
+          {circuito.isOrdemHeuristica && (
+            <p className="text-[11px] text-gray-400 -mt-1">
+              Ordem das paradas por proximidade em linha reta de casa — pode não ser a rota mais
+              curta na prática.
+            </p>
+          )}
 
           {/* 1. TRAJETO DE IDA */}
           <div className="bg-emerald-50/50 p-3.5 rounded-2xl border border-emerald-100/80 space-y-2">
@@ -490,15 +453,20 @@ export default function RotasTrabalho({
 
             <div className="bg-blue-600 text-white p-3.5 rounded-2xl shadow-sm">
               <span className="text-[11px] font-bold uppercase tracking-wider opacity-90 block">
-                Previsão Mensal (22 dias úteis)
+                Previsão Mensal ({circuito.previsao?.diasUteisMes ?? 22} dias úteis)
               </span>
               <div className="text-xl font-black mt-0.5">
                 {circuito.custoTotalMensalRS.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 <span className="text-xs font-medium opacity-90 ml-1">/ mês</span>
               </div>
-              <span className="text-[11px] opacity-90 font-medium block mt-0.5">
-                {(circuito.distanciaTotalKm * 22).toFixed(0)} km totais por mês
-              </span>
+              {circuito.previsao && (
+                <span className="text-[11px] opacity-90 font-medium block mt-0.5">
+                  faixa {circuito.previsao.faixaMin.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })}
+                  {' – '}
+                  {circuito.previsao.faixaMax.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })}
+                  {circuito.previsao.custoViagensMes > 0 && ' • inclui viagens'}
+                </span>
+              )}
             </div>
           </div>
 

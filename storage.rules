@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// Storage do projeto "consumocombustivel-3adda".
+// Só a foto de perfil é usada. Leitura pública (a imagem aparece no app),
+// escrita apenas para clientes autenticados (login anônimo) e só imagens até 5 MB.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /fotos/{arquivo} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

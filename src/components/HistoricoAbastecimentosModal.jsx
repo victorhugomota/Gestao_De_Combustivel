@@ -1,6 +1,7 @@
 ﻿import React, { useState } from 'react';
 import { History, X, Edit2, Trash2, Fuel, Calendar, Gauge, DollarSign } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatarDataBR } from '../utils/dataUtils';
+import { normalizarTipoCombustivel } from '../utils/combustivel';
 
 export default function HistoricoAbastecimentosModal({
   isOpen,
@@ -14,23 +15,7 @@ export default function HistoricoAbastecimentosModal({
 
   if (!isOpen) return null;
 
-  const formatarData = (dataVal) => {
-    if (!dataVal) return '--';
-    try {
-      if (dataVal.toDate) {
-        return format(dataVal.toDate(), 'dd/MM/yyyy');
-      }
-      if (typeof dataVal === 'string' && dataVal.includes('-')) {
-        const parts = dataVal.split('-');
-        if (parts.length === 3) {
-          return `${parts[2]}/${parts[1]}/${parts[0]}`;
-        }
-      }
-      return format(new Date(dataVal), 'dd/MM/yyyy');
-    } catch {
-      return String(dataVal);
-    }
-  };
+  const formatarData = (dataVal) => formatarDataBR(dataVal);
 
   const handleConfirmarExclusao = async (id) => {
     try {
@@ -93,8 +78,9 @@ export default function HistoricoAbastecimentosModal({
           ) : (
             <div className="space-y-3">
               {abastecimentos.map((item) => {
-                const isGasolina = (item.tipoCombustivel || '').toLowerCase() === 'gasolina';
+                const isGasolina = normalizarTipoCombustivel(item.tipoCombustivel) === 'Gasolina';
                 const vLitro = item.valorLitro || (item.totalLitros > 0 ? item.valorTotal / item.totalLitros : 0);
+                const parcial = item.tanqueCheio === false;
 
                 return (
                   <div
@@ -117,8 +103,18 @@ export default function HistoricoAbastecimentosModal({
                               : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                           }`}
                         >
-                          {item.tipoCombustivel || 'Gasolina'}
+                          {normalizarTipoCombustivel(item.tipoCombustivel)}
                         </span>
+                        {parcial && (
+                          <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-0.5 ml-1 bg-gray-100 text-gray-500 border border-gray-200">
+                            parcial
+                          </span>
+                        )}
+                        {item.posto && (
+                          <span className="block text-[10px] text-gray-400 mt-0.5 truncate max-w-[140px]">
+                            {item.posto}
+                          </span>
+                        )}
                       </div>
                     </div>
 

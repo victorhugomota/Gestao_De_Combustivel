@@ -13,27 +13,29 @@ export default function ViagensPreagendadas({
   onCalendarioClick
 }) {
   const avgPricePerLiter = useMemo(() => {
-    if (!abastecimentos || abastecimentos.length === 0) return 5.50;
+    if (!abastecimentos || abastecimentos.length === 0) return 0;
     const ultimos = abastecimentos.slice(0, 5);
     const soma = ultimos.reduce((acc, curr) => acc + Number(curr.valorLitro || 0), 0);
-    return soma > 0 ? soma / ultimos.length : 5.50;
+    return soma > 0 ? soma / ultimos.length : 0;
   }, [abastecimentos]);
-
-  const avgKmL = mediaKmPorLitro > 0 ? mediaKmPorLitro : 10;
 
   const circuito = useMemo(() => {
     if (circuitoProp) return circuitoProp;
     return calcularCircuito(
       {
-        latCasa: config?.latCasa || -21.2687653,
-        lngCasa: config?.lngCasa || -47.8197413,
-        nomeCasa: config?.nomeCasa || 'Casa - Lar Grécia'
+        latCasa: config?.latCasa ?? -21.2687653,
+        lngCasa: config?.lngCasa ?? -47.8197413,
+        nomeCasa: config?.nomeCasa || 'Casa'
       },
       rotas,
-      avgKmL,
-      avgPricePerLiter
+      {
+        mediaKmPorLitro,
+        precoLitroMedio: avgPricePerLiter,
+        viagens,
+        abastecimentos
+      }
     );
-  }, [circuitoProp, config, rotas, avgKmL, avgPricePerLiter]);
+  }, [circuitoProp, config, rotas, mediaKmPorLitro, avgPricePerLiter, viagens, abastecimentos]);
 
   const handleAbrirSiteViagens = () => {
     window.open('https://victorhugomota.github.io/SiteDeViagens/', '_blank');
@@ -152,7 +154,7 @@ export default function ViagensPreagendadas({
                   </span>
                 </div>
                 <div className="bg-white/90 p-2.5 rounded-xl border border-blue-100/50 flex-1">
-                  <span className="text-[10px] font-bold text-blue-800 uppercase block">Previsão Mensal (22 dias)</span>
+                  <span className="text-[10px] font-bold text-blue-800 uppercase block">Previsão Mensal ({circuito.previsao?.diasUteisMes ?? 22} dias úteis)</span>
                   <span className="text-sm font-black text-blue-900">
                     {circuito.custoTotalMensalRS.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </span>

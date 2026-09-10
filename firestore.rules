@@ -1,0 +1,62 @@
+rules_version = '2';
+
+// Regras do projeto "consumocombustivel-3adda".
+//
+// Modelo de segurança: app pessoal, sem contas individuais. Exigimos apenas
+// que o cliente esteja autenticado (login ANÔNIMO do Firebase basta) e
+// validamos o formato dos documentos para impedir lixo/escrita maliciosa.
+//
+// >>> Para funcionar, habilite Authentication > Sign-in method > Anônimo. <<<
+// Se preferir NÃO usar auth, troque `isCliente()` por `true` (menos seguro).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isCliente() {
+      return request.auth != null;
+    }
+
+    function num(v) {
+      return v is number && v >= 0;
+    }
+
+    // ---- Abastecimentos ----
+    match /abastecimentos/{id} {
+      allow read: if isCliente();
+      allow create, update: if isCliente()
+        && request.resource.data.data is string
+        && num(request.resource.data.valorTotal) && request.resource.data.valorTotal > 0
+        && num(request.resource.data.totalLitros) && request.resource.data.totalLitros > 0
+        && num(request.resource.data.odometroKm)
+        && request.resource.data.tipoCombustivel in ['Gasolina', 'Etanol'];
+      allow delete: if isCliente();
+    }
+
+    // ---- Rotas de trabalho ----
+    match /rotas/{id} {
+      allow read: if isCliente();
+      allow write: if isCliente()
+        && request.resource.data.nome is string
+        && request.resource.data.latitude is number
+        && request.resource.data.longitude is number;
+    }
+
+    // ---- Postos e preços ----
+    match /postos/{id} {
+      allow read: if isCliente();
+      allow write: if isCliente()
+        && request.resource.data.nome is string;
+    }
+
+    // ---- Configuração única ----
+    match /configuracoes/{id} {
+      allow read: if isCliente();
+      allow write: if isCliente();
+    }
+
+    // Nada mais é acessível.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
