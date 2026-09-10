@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset="utf-8">
+<title>Documentação Técnica - Sistema de Gestão de Combustível</title>
+<!--[if gte mso 9]>
+<xml>
+ <w:WordDocument>
+  <w:View>Print</w:View>
+  <w:Zoom>100</w:Zoom>
+  <w:DoNotOptimizeForBrowser/>
+ </w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+  @page {
+    size: 210mm 297mm; /* A4 */
+    margin: 25mm 20mm 25mm 20mm;
+    mso-header-margin: 35.4pt;
+    mso-footer-margin: 35.4pt;
+    mso-paper-source: 0;
+  }
+  body {
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #1f2937;
+    background-color: #ffffff;
+    margin: 0;
+    padding: 0;
+  }
+  h1, h2, h3, h4, h5 {
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+    color: #0f172a;
+    font-weight: 700;
+    margin-top: 18pt;
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+  }
+  h1.doc-title {
+    font-size: 26pt;
+    color: #047857; /* emerald-700 */
+    margin-top: 0;
+    margin-bottom: 8pt;
+    text-align: left;
+    border-bottom: 3pt solid #10b981;
+    padding-bottom: 8pt;
+  }
+  .doc-subtitle {
+    font-size: 14pt;
+    color: #4b5563;
+    margin-bottom: 24pt;
+    font-weight: 400;
+  }
+  h1 {
+    font-size: 18pt;
+    color: #065f46;
+    border-bottom: 1.5pt solid #e2e8f0;
+    padding-bottom: 4pt;
+    margin-top: 24pt;
+  }
+  h2 {
+    font-size: 14pt;
+    color: #1e293b;
+    margin-top: 16pt;
+    border-left: 4pt solid #10b981;
+    padding-left: 8pt;
+  }
+  h3 {
+    font-size: 12pt;
+    color: #334155;
+    margin-top: 12pt;
+  }
+  p {
+    margin-top: 0;
+    margin-bottom: 8pt;
+    text-align: justify;
+  }
+  ul, ol {
+    margin-top: 0;
+    margin-bottom: 10pt;
+    padding-left: 20pt;
+  }
+  li {
+    margin-bottom: 4pt;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10pt;
+    margin-bottom: 14pt;
+    font-size: 10pt;
+  }
+  th {
+    background-color: #065f46;
+    color: #ffffff;
+    font-weight: 600;
+    text-align: left;
+    padding: 8pt;
+    border: 1pt solid #065f46;
+  }
+  td {
+    padding: 6pt 8pt;
+    border: 1pt solid #cbd5e1;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td {
+    background-color: #f8fafc;
+  }
+  .callout {
+    background-color: #f0fdf4;
+    border-left: 4pt solid #10b981;
+    padding: 10pt 12pt;
+    margin: 12pt 0;
+    border-radius: 0 4pt 4pt 0;
+  }
+  .callout-warning {
+    background-color: #fffbeb;
+    border-left: 4pt solid #f59e0b;
+    padding: 10pt 12pt;
+    margin: 12pt 0;
+    border-radius: 0 4pt 4pt 0;
+  }
+  .callout-blue {
+    background-color: #eff6ff;
+    border-left: 4pt solid #3b82f6;
+    padding: 10pt 12pt;
+    margin: 12pt 0;
+    border-radius: 0 4pt 4pt 0;
+  }
+  .code-block {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background-color: #0f172a;
+    color: #f8fafc;
+    padding: 10pt 12pt;
+    border-radius: 4pt;
+    font-size: 9.5pt;
+    line-height: 1.4;
+    margin: 10pt 0 14pt 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .inline-code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background-color: #f1f5f9;
+    color: #0f172a;
+    padding: 1pt 4pt;
+    border-radius: 3pt;
+    font-size: 9.5pt;
+    border: 1pt solid #e2e8f0;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2pt 6pt;
+    border-radius: 4pt;
+    font-size: 8.5pt;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  .badge-green { background-color: #dcfce7; color: #15803d; }
+  .badge-blue { background-color: #dbeafe; color: #1d4ed8; }
+  .badge-amber { background-color: #fef3c7; color: #b45309; }
+  .meta-box {
+    background-color: #f8fafc;
+    border: 1pt solid #e2e8f0;
+    border-radius: 6pt;
+    padding: 12pt;
+    margin-bottom: 20pt;
+  }
+  .meta-grid {
+    width: 100%;
+    margin: 0;
+    border: none;
+  }
+  .meta-grid td {
+    border: none;
+    padding: 4pt 8pt;
+    background: transparent !important;
+  }
+  .text-muted { color: #64748b; }
+  .page-break { page-break-after: always; }
+</style>
+</head>
+<body>
+
+<!-- CAPA E CABEÇALHO EXECUTIVO -->
+<div class="meta-box">
+  <table class="meta-grid">
+    <tr>
+      <td width="70%">
+        <h1 class="doc-title">Documentação Técnica de Engenharia</h1>
+        <div class="doc-subtitle">Sistema de Gestão & Auditoria de Consumo de Combustível ("Consumo Família Mota")</div>
+      </td>
+      <td width="30%" style="text-align: right; vertical-align: top;">
+        <span class="badge badge-green">Versão de Produção 2.1</span><br>
+        <small class="text-muted">Data: Setembro/2026</small><br>
+        <small class="text-muted">Classificação: Documento Técnico Interno</small>
+      </td>
+    </tr>
+  </table>
+  <hr style="border: 0; border-top: 1pt solid #cbd5e1; margin: 8pt 0 12pt 0;">
+  <table class="meta-grid">
+    <tr>
+      <td><strong>Veículo de Referência:</strong> Nissan Kicks Advance 1.6 Flex</td>
+      <td><strong>Repositório Git:</strong> victorhugomota/Gestao_De_Combustivel</td>
+    </tr>
+    <tr>
+      <td><strong>Frontend Stack:</strong> React 18, Vite 5, Tailwind CSS, Leaflet/OSRM</td>
+      <td><strong>Deploy URL:</strong> https://victorhugomota.github.io/Gestao_De_Combustivel/</td>
+    </tr>
+    <tr>
+      <td><strong>Bancos de Dados (Firebase):</strong> consumocombustivel-3adda & sitedeviagens-f1aaa</td>
+      <td><strong>Status da Aplicação:</strong> Operacional / Em Produção</td>
+    </tr>
+  </table>
+</div>
+
+<p><em>Este documento consolida toda a especificação arquitetural, modelos matemáticos de cálculo, contratos de dados Firestore, rotinas de geolocalização e malha viária, fluxos de interface (UI/UX) e procedimentos de integração para o time de desenvolvimento responsável pela manutenção, expansão e evolução contínua da plataforma.</em></p>
+
+<!-- SUMÁRIO EXECUTIVO -->
+<h2>Sumário Executivo dos Tópicos</h2>
+<ol>
+  <li><strong>Visão Geral e Objetivos do Produto</strong></li>
+  <li><strong>Arquitetura Técnica do Sistema & Stack Tecnológica</strong></li>
+  <li><strong>Estrutura de Diretórios e Componentização</strong></li>
+  <li><strong>Modelagem de Dados e Integração Dual-Database (Firebase Firestore)</strong></li>
+  <li><strong>Algoritmos de Negócio, Roteirização Viária e Modelagem Matemática</strong></li>
+  <li><strong>Especificação Funcional das Telas e Componentes (Z-Pattern Desktop)</strong></li>
+  <li><strong>Fluxos Críticos e Tratamento de Exceções (ErrorBoundary & Regras de Hooks)</strong></li>
+  <li><strong>Integração com o Ecossistema do "Site de Viagens"</strong></li>
+  <li><strong>Pipeline de CI/CD, Build e Deploy Automatizado (GitHub Actions & gh-pages)</strong></li>
+  <li><strong>Guia de Configuração do Ambiente para Desenvolvedores (Onboarding)</strong></li>
+  <li><strong>Roadmap Técnico & Oportunidades de Evolução</strong></li>
+</ol>
+
+<div class="page-break"></div>
+
+<!-- 1. VISÃO GERAL E OBJETIVOS DO PRODUTO -->
+<h1>1. Visão Geral e Objetivos do Produto</h1>
+<p>O <strong>Sistema de Gestão de Combustível</strong> é uma Single Page Application (SPA) responsiva projetada especificamente para controle financeiro, auditoria de abastecimentos e otimização de rotas cotidianas de trabalho e lazer.</p>
+
+<p>Diferente de planilhas convencionais ou aplicativos comerciais genéricos que exigem inserções exaustivas e não integram a malha viária real, este sistema foi concebido sob três premissas fundamentais:</p>
+<ul>
+  <li><strong>Precisão com Base em Odômetro Real:</strong> A média de consumo (km/L) é calculada exclusivamente pela diferença de quilometragem entre abastecimentos sucessivos com tanque cheio, eliminando distorções de estimativas empíricas.</li>
+  <li><strong>Circuito Pendular Real de Trabalho (Ida e Volta Separados):</strong> O algoritmo reproduz a rotina diária exata de um casal com múltiplos destinos profissionais (ex: Casa &rarr; Destino mais próximo &rarr; Destino mais distante na Ida; e retorno invertido para recolher o passageiro na Volta), calculando a quilometragem viária real através do motor de rotas OSRM (Open Source Routing Machine).</li>
+  <li><strong>Integração com Planejamento de Viagens:</strong> Conexão em tempo real ao banco de dados Firestore do <em>Site de Viagens</em> da família, sincronizando automaticamente custos de combustível estimados e itinerários futuros diretamente no calendário mensal.</li>
+</ul>
+
+<!-- 2. ARQUITETURA TÉCNICA DO SISTEMA -->
+<h1>2. Arquitetura Técnica do Sistema & Stack Tecnológica</h1>
+<p>A aplicação adota uma arquitetura frontend moderna, orientada a componentes funcionais, sem servidores intermediários proprietários (Serverless / BaaS via Firebase), priorizando alta velocidade de carregamento e compatibilidade móvel.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Camada</th>
+      <th>Tecnologia / Biblioteca</th>
+      <th>Versão</th>
+      <th>Papel e Responsabilidade</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Core Engine</strong></td>
+      <td>React</td>
+      <td>18.2.0</td>
+      <td>Renderização baseada em Virtual DOM, gerenciamento de estado via hooks nativos.</td>
+    </tr>
+    <tr>
+      <td><strong>Build Tool</strong></td>
+      <td>Vite</td>
+      <td>5.4.0+</td>
+      <td>Empacotador ultra-rápido com HMR (Hot Module Replacement) e Rollup para build de produção.</td>
+    </tr>
+    <tr>
+      <td><strong>Estilização</strong></td>
+      <td>Tailwind CSS</td>
+      <td>3.4.0</td>
+      <td>Design System utilitário, design responsivo (breakpoints sm, md, lg, xl) e microinterações.</td>
+    </tr>
+    <tr>
+      <td><strong>Backend / BaaS</strong></td>
+      <td>Firebase Firestore</td>
+      <td>10.14.0</td>
+      <td>Bancos de dados NoSQL em tempo real, sincronização com listeners <span class="inline-code">onSnapshot</span> e persistência offline.</td>
+    </tr>
+    <tr>
+      <td><strong>Mapas & GIS</strong></td>
+      <td>Leaflet + React-Leaflet</td>
+      <td>1.9.4 / 4.2.1</td>
+      <td>Renderização vetorial de mapas interativos, marcadores e traçado de polilinhas da rota.</td>
+    </tr>
+    <tr>
+      <td><strong>Roteamento Viário</strong></td>
+      <td>OSRM (Driving Engine)</td>
+      <td>v1 REST API</td>
+      <td>Cálculo de distâncias viárias reais considerando curvas, viadutos e mãos de direção.</td>
+    </tr>
+    <tr>
+      <td><strong>Visualização Gráfica</strong></td>
+      <td>Recharts</td>
+      <td>2.12.0</td>
+      <td>Gráficos responsivos de consumo histórico, sparklines e análise comparativa de preços.</td>
+    </tr>
+    <tr>
+      <td><strong>Manipulação de Datas</strong></td>
+      <td>date-fns + ptBR</td>
+      <td>4.1.0</td>
+      <td>Geração do calendário mensal, cálculo de intervalos e localização em português brasileiro.</td>
+    </tr>
+    <tr>
+      <td><strong>Iconografia</strong></td>
+      <td>Lucide React</td>
+      <td>0.453.0</td>
+      <td>Conjunto unificado de ícones SVG com design minimalista e moderno.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- 3. ESTRUTURA DE DIRETÓRIOS E COMPONENTIZAÇÃO -->
+<h1>3. Estrutura de Diretórios e Componentização</h1>
+<p>O projeto segue um padrão rigoroso de separação de responsabilidades (SoC), separando lógica de dados (custom hooks), algoritmos puros (utils) e elementos visuais (components):</p>
+
+<div class="code-block">gestao-de-combustivel/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml              # Pipeline de CI/CD para GitHub Pages via GitHub Actions
+├── public/
+│   ├── vite.svg
+│   └── favicon.ico
+├── src/
+│   ├── components/
+│   │   ├── AnalisePrecos.jsx       # Comparativo de paridade Etanol x Gasolina (regra dos 70%)
+│   │   ├── CalendarioCustosModal.jsx # Modal do calendário mensal com custos por dia útil e viagens
+│   │   ├── DecisaoCombustivel.jsx  # Card com recomendação do combustível mais vantajoso
+│   │   ├── ErrorBoundary.jsx       # Barreira de contenção contra falhas inesperadas de renderização
+│   │   ├── EstimativaBadge.jsx     # Selo visual indicativo de incerteza/dados empíricos
+│   │   ├── GraficoConsumo.jsx      # Gráfico de barras/linhas com evolução de preços e km/L
+│   │   ├── Header.jsx              # Z-Pattern Ponto 1 e 2: Logo, avatar do veículo e botões CTA
+│   │   ├── HistoricoAbastecimentosModal.jsx # Tabela paginada/filtrável para CRUD de abastecimentos
+│   │   ├── MapaRota.jsx            # Mapa Leaflet renderizando os segmentos de Ida (verde) e Volta (azul)
+│   │   ├── MetricCards.jsx         # Três divisões: Consumo Médio, Custo por Km e Preço do Litro
+│   │   ├── PostosCombustivel.jsx   # Gestão de postos favoritos e pesquisa via Overpass OSM
+│   │   ├── RegistrarAbastecimentoModal.jsx # Formulário de entrada com cálculo automático de R$/L
+│   │   ├── RotasTrabalho.jsx       # Cadastro de destinos, geocodificação e pernas da rota
+│   │   └── ViagensPreagendadas.jsx # Painel de viagens sincronizadas do "Site de Viagens"
+│   ├── hooks/
+│   │   ├── useAbastecimentos.js    # Sincronização em tempo real da coleção 'abastecimentos'
+│   │   ├── useMetricas.js          # Cálculos derivados de médias, odômetro e despesas
+│   │   ├── usePostos.js            # Listener e mutações da coleção 'postos'
+│   │   ├── useRotas.js             # Gerenciamento de destinos de trabalho e endereço da residência
+│   │   └── useViagens.js           # Conexão externa à coleção 'trips' do projeto de viagens
+│   ├── utils/
+│   │   ├── combustivel.js          # Normalização de tipos e razão matemática de paridade
+│   │   ├── dataUtils.js            # Formatadores de data para fusos horários locais
+│   │   ├── feriados.js             # Algoritmo de Meeus/Jones/Butcher para feriados móveis nacionais
+│   │   ├── geocode.js              # Geocodificação de endereços via Nominatim / OpenStreetMap
+│   │   ├── previsao.js             # Projeção unificada de gastos para dias úteis e viagens
+│   │   └── rotasUtils.js           # Algoritmo de circuito pendular e integração OSRM
+│   ├── App.jsx                     # Componente raiz, layout grid e orquestração de estados
+│   ├── firebase.js                 # Inicialização dos dois apps Firebase (Consumo e Viagens)
+│   ├── index.css                   # Diretivas Tailwind e estilização base
+│   └── main.jsx                    # Ponto de entrada React com montagem no DOM
+├── index.html                      # Template HTML de entrada
+├── package.json                    # Dependências e scripts npm
+├── tailwind.config.js              # Configurações do compilador Tailwind
+└── vite.config.js                  # Configurações do Vite (base: './')</div>
+
+<div class="page-break"></div>
+
+<!-- 4. MODELAGEM DE DADOS E FIREBASE -->
+<h1>4. Modelagem de Dados e Integração Dual-Database</h1>
+<p>Um dos pontos mais sofisticados da arquitetura é o uso de duas instâncias independentes do Firebase Firestore rodando no mesmo cliente frontend, configuradas em <span class="inline-code">src/firebase.js</span>.</p>
+
+<div class="callout-blue">
+  <strong>Arquitetura Dual-Database:</strong><br>
+  1. <strong>App Principal (<span class="inline-code">consumocombustivel-3adda</span>):</strong> Responsável por todos os dados cadastrais locais (abastecimentos, veículos, postos e rotas). Operações de Leitura e Escrita (CRUD completo).<br>
+  2. <strong>App Secundário (<span class="inline-code">sitedeviagens-f1aaa</span>):</strong> Conectado em modo de Leitura (Read-Only) à coleção de itinerários do site externo da família, garantindo independência operacional sem risco de corrupção cruzada.
+</div>
+
+<h2>4.1. Dicionário de Coleções do Banco Principal</h2>
+
+<h3>A. Coleção <span class="inline-code">abastecimentos</span></h3>
+<table>
+  <thead>
+    <tr>
+      <th>Campo</th>
+      <th>Tipo</th>
+      <th>Descrição e Restrições de Validação</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="inline-code">id</span></td>
+      <td>String (Auto)</td>
+      <td>Identificador único gerado automaticamente pelo Firestore.</td>
+    </tr>
+    <tr>
+      <td><span class="inline-code">data</span></td>
+      <td>String (ISO)</td>
+      <td>Data no formato <span class="inline-code">YYYY-MM-DD</span> (ex: '2026-09-08').</td>
+    </tr>
+    <tr>
+      <td><span class="inline-code">odometroKm</span></td>
+      <td>Number</td>
+      <td>Quilometragem total marcada no painel do veículo (ex: 40080). Deve ser estritamente crescente.</td>
+    </tr>
+    <tr>
+      <td><span class="inline-code">valorTotal</span></td>
+      <td>Number</td>
+      <td>Valor monetário total pago no abastecimento em Reais (ex: 55.00).</td>
+    </tr>
+    <tr>
+      <td><span class="inline-code">totalLitros</span></td>
+      <td>Number</td>
+      <td>Volume de combustível injetado no tanque em litros (ex: 11.00).</td>
+    </tr>
+    <tr>
+      <td><span class="inline-code">valorLitro</span></td>
+      <td>Number</td>
+      <td>Preço unitário calculado: <span class="inline-code">valorTotal / totalLitros</span> (ex: 5.00).</td>
+    </tr>
+    <tr>
+      <td><span class="inline-code">tipoCombustivel</span></td>
+      <td>String</td>
+      <td>Enum: <span class="inline-code">'Gasolina'</span> ou <span class="inline-code">'Etanol'</span>.</td>
+    </tr>
+    <tr>
+      <td><span class="inline-code">createdAt</span></td>
+      <td>Timestamp</td>
+      <td>Carimbo de data/hora de criação no servidor (<span class="inline-code">serverTimestamp()</span>).</td>
+    </tr>
+    <tr>
+      <td><span class="inline-code">updatedAt</span></td>
+      <td>Timestamp</td>
+      <td>Carimbo de data/hora da última alteração.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>B. Coleção <span class="inline-code">configuracoes</span> (Documento: <span class="inline-code">global</span>)</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Campo</th>
+      <th>Tipo</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="inline-code">nomeVeiculo</span></td>
+      <td>String</td>
+      <td>Nome amigável do automóvel (Padrão: <em>"Nissan Kicks de Victor e Maria"</em>).</td>
+    </tr>
+    <tr>
+      <td><span class="inline-code">fotoVeiculo</span></td>
+      <td>String (Base64)</td>
+      <td>Imagem customizável do veículo compactada em DataURL para renderização rápida.</td>
+    </tr>
+    <tr>
+      <td><span class="inline-code">enderecoCasa</span></td>
+      <td>String</td>
+      <td>Logradouro de partida da rotina diária (Ribeirão Preto / Bonfim Paulista).</td>
+    </tr>
+    <tr>
+      <td><span class="inline-code">latCasa / lngCasa</span></td>
+      <td>Number</td>
+      <td>Coordenadas geográficas WGS84 do ponto de partida (Padrão: -21.2687653, -47.8197413).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>C. Coleção <span class="inline-code">rotas</span></h3>
+<table>
+  <thead>
+    <tr>
+      <th>Campo</th>
+      <th>Tipo</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="inline-code">nome</span></td>
+      <td>String</td>
+      <td>Identificador do destino (ex: "Central de Negócios Bild", "Trabalho Lagoinha").</td>
+    </tr>
+    <tr>
+      <td><span class="inline-code">endereco</span></td>
+      <td>String</td>
+      <td>Endereço completo resolvido por autocompletar e geocodificação.</td>
+    </tr>
+    <tr>
+      <td><span class="inline-code">latitude / longitude</span></td>
+      <td>Number</td>
+      <td>Coordenadas WGS84 do destino para plotagem no mapa e OSRM.</td>
+    </tr>
+    <tr>
+      <td><span class="inline-code">ordem</span></td>
+      <td>Number</td>
+      <td>Índice de prioridade cadastral.</td>
+    </tr>
+    <tr>
+      <td><span class="inline-code">ativa</span></td>
+      <td>Boolean</td>
+      <td>Flag para ativar/desativar a rota temporariamente sem excluí-la.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4.2. Estrutura de Leitura do Banco de Viagens (Coleção <span class="inline-code">trips</span>)</h2>
+<p>O hook <span class="inline-code">useViagens.js</span> escuta em tempo real a coleção <span class="inline-code">trips</span> do banco <span class="inline-code">sitedeviagens-f1aaa</span>. Cada documento contém os seguintes campos consumidos pelo painel:</p>
+<ul>
+  <li><span class="inline-code">title</span>: Título da viagem (ex: "Viagem para Ubatã", "Viagem Socorro").</li>
+  <li><span class="inline-code">startDate</span> e <span class="inline-code">endDate</span>: Intervalo de datas no formato ISO.</li>
+  <li><span class="inline-code">destinationAddress</span>: Cidade ou endereço do destino turístico.</li>
+  <li><span class="inline-code">transport.distanceKm</span>: Quilometragem total estimada de estrada.</li>
+  <li><span class="inline-code">transport.calculatedFuelCost</span>: Custo previsto de combustível calculado pelo site de viagens.</li>
+  <li><span class="inline-code">totalEstimateCost</span>: Orçamento total consolidado (hospedagem + alimentação + combustível).</li>
+</ul>
+
+<div class="page-break"></div>
+
+<!-- 5. ALGORITMOS E MODELAGEM MATEMÁTICA -->
+<h1>5. Algoritmos de Negócio, Roteirização Viária e Modelagem Matemática</h1>
+
+<h2>5.1. Cálculo de Consumo Real por Variação de Odômetro</h2>
+<p>O sistema rejeita métodos que dividem o total acumulado de litros pela quantidade arbitrária de dias decorridos. Em vez disso, o consumo médio real é calculado par-a-par:</p>
+
+<div class="callout">
+  <strong>Fórmula Matemática de Consumo:</strong><br>
+  Para uma lista cronologicamente ordenada de abastecimentos com odômetro [A<sub>0</sub>, A<sub>1</sub>, ..., A<sub>n</sub>]:<br>
+  &bull; Distância percorrida no intervalo <em>i</em>: &Delta;Km<sub>i</sub> = Odometro(A<sub>i</sub>) - Odometro(A<sub>i-1</sub>)<br>
+  &bull; Litros consumidos no intervalo: Litros<sub>i</sub> = TotalLitros(A<sub>i</sub>)<br>
+  &bull; Consumo do intervalo: M<sub>i</sub> = &Delta;Km<sub>i</sub> / Litros<sub>i</sub><br>
+  &bull; <strong>Consumo Médio Ponderado Geral:</strong> (Odometro<sub>final</sub> - Odometro<sub>inicial</sub>) / &sum; Litros(A<sub>1</sub> .. A<sub>n</sub>)
+</div>
+
+<h2>5.2. Custo por Quilômetro Rodado e Preço Médio do Litro</h2>
+<ul>
+  <li><strong>Preço Médio do Litro (P<sub>L</sub>):</strong> &sum; valorTotal / &sum; totalLitros (Preço médio ponderado pelo volume adquirido).</li>
+  <li><strong>Custo por Quilômetro Rodado (C<sub>Km</sub>):</strong> P<sub>L</sub> / Consumo Médio (R$/L &divide; km/L = R$/km).</li>
+</ul>
+
+<h2>5.3. Algoritmo de Sequenciamento de Circuito Pendular (Ida e Volta)</h2>
+<p>A rotina de deslocamento implementada em <span class="inline-code">rotasUtils.js</span> resolve um problema real de logística familiar:</p>
+
+<div class="callout-blue">
+  <strong>Lógica do Circuito:</strong><br>
+  1. <strong>Ordenação por Proximidade:</strong> Todos os destinos ativos têm sua distância euclidiana para a Casa calculada. Os destinos são ordenados de forma crescente: D<sub>1</sub> (mais próximo) até D<sub>n</sub> (mais distante).<br>
+  2. <strong>Trajeto de Ida:</strong> Casa &rarr; D<sub>1</sub> &rarr; D<sub>2</sub> &rarr; ... &rarr; D<sub>n</sub>.<br>
+  3. <strong>Trajeto de Volta:</strong> D<sub>n</sub> &rarr; ... &rarr; D<sub>2</sub> &rarr; D<sub>1</sub> &rarr; Casa (garante que passageiros deixados no destino inicial sejam recolhidos no retorno).
+</div>
+
+<h2>5.4. Motor Viário OSRM e Resiliência (Fallback Viário)</h2>
+<p>O aplicativo consome a API pública do <strong>OSRM (Open Source Routing Machine)</strong> enviando as coordenadas exatas no padrão <span class="inline-code">lon,lat;lon,lat</span>. A resposta retorna a distância viária real de cada perna (<span class="inline-code">legs</span>).</p>
+<ul>
+  <li><strong>Correspondência com o Google Maps:</strong> Enquanto o cálculo em linha reta (Haversine) previa 11,4 km para o circuito Casa &rarr; Bild &rarr; Lagoinha, o OSRM computa <strong>16,4 km</strong>, batendo exatamente com as rodovias indicadas no Google Maps.</li>
+  <li><strong>Fallback de Alta Disponibilidade:</strong> Caso a API do OSRM esteja fora do ar ou com sobrecarga temporária, o sistema aciona automaticamente a fórmula de Haversine corrigida pelo <strong>Fator Viário Médio (FATOR_VIA_REAL = 1.38)</strong> e sinaliza ao usuário com a tag visual de estimativa (<span class="inline-code">isDistanciaReal = false</span>).</li>
+</ul>
+
+<h2>5.5. Análise de Paridade de Combustível (Etanol x Gasolina)</h2>
+<p>Implementada em <span class="inline-code">combustivel.js</span>, a função compara a relação de preços:</p>
+<p style="text-align: center; font-weight: bold; font-size: 12pt;">
+  Razão = Preço do Litro do Etanol / Preço do Litro da Gasolina
+</p>
+<ul>
+  <li>Se <strong>Razão &le; 0,70</strong> (ou menor que a razão real de rendimento aferida do motor flex do Kicks): Recomenda <strong>Etanol</strong>.</li>
+  <li>Se <strong>Razão &gt; 0,70</strong>: Recomenda <strong>Gasolina</strong>.</li>
+  <li>Calcula a economia financeira exata por quilômetro rodado equivalente para subsidiar a escolha na bomba.</li>
+</ul>
+
+<h2>5.6. Calendário e Previsão Mensal com Feriados Móveis Nacionais</h2>
+<p>O arquivo <span class="inline-code">feriados.js</span> implementa o clássico algoritmo astronômico de <strong>Meeus/Jones/Butcher</strong> para o cômputo da Páscoa de qualquer ano, derivando com exatidão matemática:</p>
+<ul>
+  <li>Carnaval (Páscoa - 47 dias) e Quarta-feira de Cinzas (Páscoa - 46 dias).</li>
+  <li>Sexta-feira Santa (Páscoa - 2 dias).</li>
+  <li>Corpus Christi (Páscoa + 60 dias).</li>
+  <li>Todos os 8 feriados nacionais fixos brasileiros (Tiradentes, Dia do Trabalho, Independência, etc.).</li>
+  <li>Feriados municipais específicos configurados (ex: 19 de Junho - Aniversário de Ribeirão Preto).</li>
+</ul>
+<p>Com isso, o custo mensal de transporte não multiplica absurdamente por 30 ou por 22 fixo, mas <strong>calcula o número exato de dias úteis reais do mês corrente</strong>, descontando pontualmente finais de semana e feriados.</p>
+
+<div class="page-break"></div>
+
+<!-- 6. ESPECIFICAÇÃO DAS TELAS E COMPONENTES -->
+<h1>6. Especificação Funcional das Telas e Componentes (Z-Pattern Desktop)</h1>
+<p>A arquitetura de UI/UX foi desenhada para conduzir a cognição visual do usuário de acordo com o <strong>Z-Pattern</strong> clássico de interfaces de alta conversão:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Ponto do Z</th>
+      <th>Componente Principal</th>
+      <th>Elementos Visuais e Interatividades</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Ponto 1 (Topo Esquerda)</strong></td>
+      <td><span class="inline-code">Header.jsx</span></td>
+      <td>
+        &bull; Avatar do veículo com suporte a upload de foto personalizada (persistida no Firestore).<br>
+        &bull; Nome do veículo inline-editable ("Nissan Kicks de Victor e Maria").<br>
+        &bull; Status online/offline de sincronização.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Ponto 2 (Topo Direita)</strong></td>
+      <td><span class="inline-code">Header.jsx</span> (Ações CTA)</td>
+      <td>
+        &bull; <strong>Botão "Registrar Abastecimento":</strong> Abre modal rápido com autofocus.<br>
+        &bull; <strong>Botão "Histórico":</strong> Abre modal com tabela completa para edição/exclusão.<br>
+        &bull; <strong>Botão "Calendário de Custos":</strong> Abre o modal do mês corrente com projeções diárias.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Diagonal Visual (Centro)</strong></td>
+      <td><span class="inline-code">RotasTrabalho.jsx</span> + <span class="inline-code">MapaRota.jsx</span></td>
+      <td>
+        &bull; Cadastro de novos destinos com busca e autocompletar Nominatim.<br>
+        &bull; Cartões detalhados separando <strong>Trechos de Ida (Verde)</strong> e <strong>Trechos de Volta (Azul)</strong> com km e R$ por perna.<br>
+        &bull; Botão direto "Abrir este trajeto no Google Maps" (<span class="inline-code">target="_blank"</span>).<br>
+        &bull; Mapa interativo Leaflet com polilinhas coloridas e marcadores com ícones SVG customizados.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Ponto 3 (Inferior Esquerda)</strong></td>
+      <td><span class="inline-code">MetricCards.jsx</span> + <span class="inline-code">GraficoConsumo.jsx</span></td>
+      <td>
+        &bull; <strong>Card 1:</strong> Média de Consumo (km/L) + sparkline de tendência.<br>
+        &bull; <strong>Card 2:</strong> Custo Médio por Km (R$/km) com indicador de variação.<br>
+        &bull; <strong>Card 3:</strong> Preço Médio do Litro (R$/L) acompanhado de total gasto (R$) e litros acumulados.<br>
+        &bull; Gráfico Recharts de barras com histórico de preços e linha de consumo.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Ponto 4 (Inferior Direita)</strong></td>
+      <td><span class="inline-code">ViagensPreagendadas.jsx</span></td>
+      <td>
+        &bull; Listagem das próximas viagens agendadas no Firebase secundário.<br>
+        &bull; Card visual com destino, data, km total e estimativa de combustível.<br>
+        &bull; Clique no card redireciona para o <em>Site de Viagens</em> oficial.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- 7. RESILIÊNCIA E TRATAMENTO DE EXCEÇÕES -->
+<h1>7. Fluxos Críticos e Tratamento de Exceções (ErrorBoundary & Regras de Hooks)</h1>
+
+<div class="callout-warning">
+  <strong>Lição de Arquitetura Crítica - Regras de Hooks do React:</strong><br>
+  No desenvolvimento de modais que utilizam hooks de memoização (<span class="inline-code">useMemo</span>) e estado (<span class="inline-code">useState</span>), é estritamente proibido realizar retornos antecipados (<span class="inline-code">if (!isOpen) return null;</span>) antes das declarações de hooks. Fazê-lo provoca a violação de integridade do React (<em>"Rendered more hooks than during the previous render"</em>), derrubando a aplicação inteira em tela branca. Todos os hooks em <span class="inline-code">CalendarioCustosModal.jsx</span> estão posicionados incondicionalmente no topo.
+</div>
+
+<p>Para garantir que falhas locais não comprometam a disponibilidade geral do sistema, as seguintes camadas de segurança foram implementadas:</p>
+<ol>
+  <li><strong>Componente <span class="inline-code">ErrorBoundary.jsx</span>:</strong> Envolve a árvore do <span class="inline-code">&lt;App /&gt;</span> em <span class="inline-code">main.jsx</span>. Em caso de qualquer erro não tratado no ciclo de vida de componentes React, uma tela estilizada de recuperação é exibida com o botão <em>"Recarregar Aplicação"</em>, evitando telas em branco.</li>
+  <li><strong>Tratamento Defensivo de Datas:</strong> Em todas as iterações sobre coleções do Firebase, os campos de data passam por um parser flexível (<span class="inline-code">parseDataFlexivel</span>) que aceita strings ISO (<span class="inline-code">'YYYY-MM-DD'</span>), objetos <span class="inline-code">Date</span> nativos e <span class="inline-code">Timestamp</span> do Firestore sem lançar exceções.</li>
+  <li><strong>Sanitização Numérica:</strong> Todos os cálculos matemáticos utilizam o padrão <span class="inline-code">Number(val) || 0</span>, evitando propagação de valores <span class="inline-code">NaN</span> nas telas e nos gráficos.</li>
+</ol>
+
+<div class="page-break"></div>
+
+<!-- 8. CI/CD E DEPLOY -->
+<h1>8. Pipeline de CI/CD, Build e Deploy Automatizado</h1>
+<p>O projeto está configurado para deploy contínuo em duas modalidades no GitHub Pages, garantindo que o time possa publicar atualizações com zero atrito.</p>
+
+<h2>8.1. Estratégia de Deploy via Branch <span class="inline-code">gh-pages</span></h2>
+<p>O pacote <span class="inline-code">gh-pages</span> está integrado como ferramenta de publicação direta via scripts npm:</p>
+<div class="code-block">"scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "predeploy": "npm run build",
+  "deploy": "gh-pages -d dist"
+}</div>
+<p>Ao executar <span class="inline-code">npm run deploy</span>, o Vite compila todos os assets para o diretório <span class="inline-code">dist</span> e o utilitário publica diretamente na branch remota <span class="inline-code">gh-pages</span>, atualizando o site em produção em menos de 30 segundos.</p>
+
+<h2>8.2. Estratégia de Deploy via GitHub Actions (<span class="inline-code">deploy.yml</span>)</h2>
+<p>Localizado em <span class="inline-code">.github/workflows/deploy.yml</span>, o pipeline é disparado automaticamente a cada <span class="inline-code">git push</span> na branch <span class="inline-code">main</span>:</p>
+<ol>
+  <li>Executa o checkout do código com <span class="inline-code">actions/checkout@v4</span>.</li>
+  <li>Configura o ambiente Node 20 com cache de npm ativado.</li>
+  <li>Instala dependências de forma limpa com <span class="inline-code">npm ci</span>.</li>
+  <li>Gera a build de produção com <span class="inline-code">npm run build</span>.</li>
+  <li>Envia os artefatos de <span class="inline-code">./dist</span> para o serviço oficial do GitHub Pages (<span class="inline-code">actions/deploy-pages@v4</span>).</li>
+</ol>
+
+<!-- 9. GUIA DE ONBOARDING PARA O TIME -->
+<h1>9. Guia de Configuração do Ambiente para Desenvolvedores (Onboarding)</h1>
+
+<h2>9.1. Pré-requisitos</h2>
+<ul>
+  <li><strong>Node.js:</strong> Versão 18.x LTS ou 20.x LTS instalada na máquina.</li>
+  <li><strong>Gerenciador de Pacotes:</strong> npm v9+ ou pnpm v8+.</li>
+  <li><strong>Git:</strong> Instalado e autenticado com permissões no repositório GitHub.</li>
+</ul>
+
+<h2>9.2. Passo a Passo de Instalação e Execução Local</h2>
+<div class="code-block"># 1. Clonar o repositório oficial
+git clone https://github.com/victorhugomota/Gestao_De_Combustivel.git
+
+# 2. Navegar até a pasta raiz da aplicação
+cd Gestao_De_Combustivel
+
+# 3. Instalar todas as dependências do projeto
+npm install
+
+# 4. Iniciar o servidor de desenvolvimento Vite (com Hot Reload)
+npm run dev
+
+# O console exibirá a URL local: http://localhost:5173/</div>
+
+<h2>9.3. Execução de Build e Verificação de Erros</h2>
+<div class="code-block"># Para testar a compilação de produção localmente
+npm run build
+
+# Para visualizar o build de produção em servidor local
+npm run preview
+
+# Para publicar alterações na branch gh-pages
+npm run deploy</div>
+
+<!-- 10. ROADMAP TÉCNICO -->
+<h1>10. Roadmap Técnico & Oportunidades de Evolução</h1>
+<p>Para as próximas sprints da equipe de desenvolvimento, destacam-se os seguintes aprimoramentos recomendados:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Recurso Proposto</th>
+      <th>Prioridade</th>
+      <th>Impacto Esperado e Descrição Técnica</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Autenticação Multi-usuário</strong></td>
+      <td><span class="badge badge-amber">Média</span></td>
+      <td>Migrar da autenticação anônima para Firebase Auth (Google Login/Email), particionando os dados em <span class="inline-code">users/{uid}/abastecimentos</span>.</td>
+    </tr>
+    <tr>
+      <td><strong>Suporte Multi-veículo</strong></td>
+      <td><span class="badge badge-blue">Alta</span></td>
+      <td>Permitir cadastro de múltiplos automóveis na mesma conta (ex: Kicks, segundo carro ou moto) com seletor no Header.</td>
+    </tr>
+    <tr>
+      <td><strong>Progressive Web App (PWA)</strong></td>
+      <td><span class="badge badge-green">Alta</span></td>
+      <td>Adicionar <span class="inline-code">manifest.json</span> e Service Worker via <span class="inline-code">vite-plugin-pwa</span> para instalação nativa no iOS/Android e uso offline no posto.</td>
+    </tr>
+    <tr>
+      <td><strong>Exportação de Relatórios</strong></td>
+      <td><span class="badge badge-blue">Média</span></td>
+      <td>Geração de relatórios mensais de despesas em formato PDF e planilha CSV para prestação de contas e controle contábil.</td>
+    </tr>
+    <tr>
+      <td><strong>Integração com OBD-II (Bluetooth)</strong></td>
+      <td><span class="badge badge-amber">Baixa</span></td>
+      <td>Leitura automática do odômetro e consumo médio diretamente da porta de diagnóstico do veículo através da Web Bluetooth API.</td>
+    </tr>
+  </tbody>
+</table>
+
+<br>
+<hr style="border: 0; border-top: 1pt solid #cbd5e1; margin: 20pt 0 10pt 0;">
+<p style="text-align: center; font-size: 9pt; color: #94a3b8;">
+  Documentação gerada e validada para a equipe de desenvolvimento do projeto Consumo Família Mota.<br>
+  Todos os direitos reservados aos autores e mantenedores do projeto.
+</p>
+
+</body>
+</html>
